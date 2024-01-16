@@ -1,9 +1,14 @@
 import sys
 
-from PyQt5.QtCore import QTranslator, QDir, QPoint
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog
+from PyQt5 import QtCore
+from PyQt5.QtCore import QTranslator, QDir, QPoint, QMimeData, QRect, Qt
+from PyQt5.QtGui import QDrag
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog, QLabel, \
+    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton
 
 from managers import js_manager
+from models.EdgePropertyModel import EdgePropertyModel
+from models.NodePropertyModel import NodePropertyModel
 from ui.Ui_DlgEdge import Ui_DlgEdge
 from ui.Ui_MainWindow import Ui_MainWindow
 
@@ -55,11 +60,61 @@ class GraphView(QMainWindow):
 
         #self._load_state()
         self._read_json()
+        self.__init_property_view()
 
     def _read_json(self):
         js_manager.init(file_name="type.json")
         self.toolbox = js_manager.tool_box_widget(parent=self.ui.dockWidgetContents_4)
         self.ui.verticalLayout_8.addWidget(self.toolbox)
+
+    def __init_property_view(self):
+        self.tableView = QTableView(self.ui.dockWidgetContents_2)
+        self.tableView.setEditTriggers(QAbstractItemView.DoubleClicked)
+        self.tableView.setSelectionMode(QAbstractItemView.NoSelection)
+        self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.tableView.horizontalHeader().setStretchLastSection(True)
+        self.node_property_model = NodePropertyModel(self.tableView)
+        self.node_property_model.dataChanged.connect(self.__node_property_changed)
+        js_manager.node_updated.connect(self.node_property_model.reset)
+        self.edge_property_model = EdgePropertyModel(self.tableView)
+        self.edge_property_model.dataChanged.connect(self.__edge_property_changed)
+        v_layout = QVBoxLayout(self.ui.dockWidgetContents_2)
+        v_layout.addWidget(self.tableView)
+        self.remove_button = QPushButton("", self.ui.dockWidgetContents_2)
+        self.remove_button.setText(self.tr("Delete"))
+        self.remove_button.setEnabled(False)
+        self.remove_button.clicked.connect(self.__remove_selected)
+        v_layout.addWidget(self.remove_button)
+
+    def __node_property_changed(self):
+        self.ui.graphScene.apply_settings()
+
+    def __edge_property_changed(self):
+        self.ui.graphScene.apply_settings()
+
+    def __remove_selected(self):
+        # nodes = list(graphm.cur_G.nodes.data(False))
+        # for i in self.ui.graphView.selected_node_indexes:
+        #     graphm.G.remove_node(nodes[i])
+        #
+        # edges = list(graphm.cur_G.edges.data(False))
+        # for i in self.ui.graphView.edge_selected_indexes:
+        #     graphm.G.remove_edge(edges[i][0], edges[i][1])
+        #
+        # self.ui.graphView.selected_node_indexes = []
+        # self.ui.graphView.edge_selected_indexes = []
+        #
+        # self.ui.graphView.selected_node_names = None
+        # self.ui.graphView.selected_node_pressed_positions = None
+        self.__deselected()
+        self.apply_settings()
+    def apply_settings(self):
+        self.ui.graphScene.style_updated = True
+        if self.graph_layout_has_changed:
+            # self.ui.graphView.apply_settings(graphm.G.graph["g_type"])
+            self.graph_layout_has_changed = False
+        else:
+            self.ui.graphScene.apply_settings()
 
 class MainView(QMainWindow):
     def __init__(self, parent: QWidget | None = None) -> None:

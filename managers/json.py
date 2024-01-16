@@ -3,12 +3,13 @@ import json
 import os
 import xml.etree.ElementTree as ElementTree
 from PIL import Image
+from PyQt5 import QtCore
 from PyQt5.QtCore import QObject, Qt, QTemporaryFile, QBuffer
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtWidgets import QToolBox, QWidget, QSizePolicy, QSpacerItem, QGridLayout, QVBoxLayout, QLabel
 
 class JSONManager(QObject):
-    #node_updated = QtCore.Signal(dict)
+    node_updated = QtCore.pyqtSignal(dict)
 
     def __init__(self):
         super().__init__()
