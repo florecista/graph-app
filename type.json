@@ -1,0 +1,848 @@
+{
+  "event": [
+    {
+      "name": "event-airplane-take-off",
+      "label": "Airplane Take off",
+      "icon": "event-airplane-take-off.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-airplane-landing",
+      "label": "Airplane Landing",
+      "icon": "event-airplane-landing.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-travel",
+      "label": "Travel",
+      "icon": "event-travel.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-meeting",
+      "label": "Meeting",
+      "icon": "event-meeting.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-robbery",
+      "label": "Robbery",
+      "icon": "event-robbery.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-arrest",
+      "label": "Arrest",
+      "icon": "event-arrest.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-explosion",
+      "label": "Explosion",
+      "icon": "event-explosion.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-car-trip",
+      "label": "Car Trip",
+      "icon": "transportation-car.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-purchase",
+      "label": "Purchase",
+      "icon": "event-purchase.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "event-contract",
+      "label": "Contract",
+      "icon": "event-contract.svg",
+      "attributes": [
+        {
+          "name": "Event Start Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Start Time",
+          "type": "time",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Date",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Event Finish Time",
+          "type": "time",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "object": [
+    {
+      "name": "object-unknown",
+      "label": "Unknown",
+      "icon": "object-unknown.svg",
+      "attributes": [
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "object-home",
+      "label": "Home",
+      "icon": "object-home.svg"
+    },
+    {
+      "name": "object-business",
+      "label": "Business",
+      "icon": "object-business.svg"
+    },
+    {
+      "name": "object-telephone",
+      "label": "Telephone",
+      "icon": "object-telephone.svg"
+    },
+    {
+      "name": "object-mobile",
+      "label": "Mobile",
+      "icon": "object-mobile.svg"
+    },
+    {
+      "name": "object-email",
+      "label": "Email",
+      "icon": "object-email.svg"
+    },
+    {
+      "name": "object-document",
+      "label": "Document",
+      "icon": "object-document.svg"
+    }
+  ],
+  "people": [
+    {
+      "name": "people-male",
+      "label": "Male",
+      "icon": "people-male.svg",
+      "attributes": [
+        {
+          "name": "First Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Last Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country of Birth",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Date of Birth",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Citizenship",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "people-female",
+      "label": "Female",
+      "icon": "people-female.svg",
+      "attributes": [
+        {
+          "name": "First Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Last Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country of Birth",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Date of Birth",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Citizenship",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "people-unknown",
+      "label": "Unknown",
+      "icon": "people-unknown.svg",
+      "attributes": [
+        {
+          "name": "First Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Last Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country of Birth",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Date of Birth",
+          "type": "date",
+          "description": ""
+        },
+        {
+          "name": "Citizenship",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "people-group",
+      "label": "Group",
+      "icon": "people-group.svg",
+      "attributes": [
+        {
+          "name": "Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Alias",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "services": [
+    {
+      "name": "services-internet",
+      "label": "Internet",
+      "icon": "services-internet.svg",
+      "attributes": [
+        {
+          "name": "Provider",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Username",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Password",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "services-website",
+      "label": "Website",
+      "icon": "services-website.svg",
+      "attributes": [
+        {
+          "name": "URL",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Email",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Username",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Password",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "services-whatsapp",
+      "label": "WhatsApp",
+      "icon": "services-whatsapp.svg",
+      "attributes": [
+        {
+          "name": "Phone",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "services-subscription",
+      "label": "Subscription",
+      "icon": "services-subscription.svg",
+      "attributes": [
+        {
+          "name": "Username",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Email",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "name": "locations-address",
+      "label": "Address",
+      "icon": "locations-address.svg",
+      "attributes": [
+        {
+          "name": "Apartment Number",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Street Number",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Street Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Suburb",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Post Code",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "City",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "State/Province",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "locations-bank",
+      "label": "Bank",
+      "icon": "locations-bank.svg",
+      "attributes": [
+        {
+          "name": "Bank Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Branch Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Apartment Number",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Street Number",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Street Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Suburb",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Post Code",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "City",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "State/Province",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "locations-city",
+      "label": "City",
+      "icon": "locations-city.svg",
+      "attributes": [
+        {
+          "name": "City",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "locations-location",
+      "label": "Location",
+      "icon": "locations-location.svg",
+      "attributes": [
+        {
+          "name": "Location Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Location Description",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Apartment Number",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Street Number",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Street Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Suburb",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Post Code",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "City",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "State/Province",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "transportation": [
+    {
+      "name": "transportation-airplane",
+      "label": "Airplane",
+      "icon": "transportation-airplane.svg"
+    },
+    {
+      "name": "transportation-car",
+      "label": "Car",
+      "icon": "transportation-car.svg",
+      "attributes": [
+        {
+          "name": "Make",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Model",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Year",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "transportation-pickup",
+      "label": "Pickup",
+      "icon": "transportation-pickup.svg",
+      "attributes": [
+        {
+          "name": "Make",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Model",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Year",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "transportation-svu",
+      "label": "SVU",
+      "icon": "transportation-svu.svg",
+      "attributes": [
+        {
+          "name": "Make",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Model",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Year",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "transportation-train",
+      "label": "Train",
+      "icon": "transportation-train.svg"
+    },
+    {
+      "name": "transportation-truck",
+      "label": "Truck",
+      "icon": "transportation-truck.svg",
+      "attributes": [
+        {
+          "name": "Make",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Model",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Year",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    }
+  ]
+}
