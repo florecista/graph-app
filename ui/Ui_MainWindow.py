@@ -4,7 +4,7 @@ from PyQt5.QtCore import QRect, QSize, Qt, QCoreApplication, QMetaObject
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QMenuBar, QStatusBar, QDockWidget, QSizePolicy, \
     QTabWidget, QGroupBox, QFormLayout, QLabel, QCheckBox, QComboBox, QPushButton, QSpacerItem, QListView, QFrame, \
-    QToolButton, QLineEdit
+    QToolButton, QLineEdit, QGraphicsView
 
 from widgets.plotwidget import PlotWidget
 
@@ -96,8 +96,12 @@ class Ui_MainWindow(object):
 
         self.canvasGraph = QVBoxLayout()
         self.canvasGraph.setObjectName(u"canvasGraph")
-        self.graphView = PlotWidget(self.tabGraph)
-        self.graphView.setObjectName(u"graphView")
+
+
+        self.graphScene = PlotWidget(self.tabGraph)
+        self.graphScene.setObjectName(u"graphView")
+        self.graphView = QGraphicsView(self.graphScene)
+
 
         self.canvasGraph.addWidget(self.graphView)
 

@@ -1,17 +1,27 @@
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView
 
 
-class PlotWidget(QWidget):
+class PlotWidget(QGraphicsScene):
 
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.scene = QGraphicsScene()
-        self.view = QGraphicsView(self.scene)
-
         self.initUI()
 
     def initUI(self):
-        vertical_layout = QVBoxLayout(self)
-        vertical_layout.setContentsMargins(0, 0, 0, 0)
-        vertical_layout.addWidget(self.view)
+        print('dragEnterEvent2')
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        pos = event.pos()
+        print('dropEvent2')
+        event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        event.acceptProposedAction()

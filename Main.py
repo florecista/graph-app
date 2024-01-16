@@ -1,9 +1,14 @@
 import sys
 
-from PyQt5.QtCore import QTranslator, QDir, QPoint
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog
+from PyQt5 import QtCore
+from PyQt5.QtCore import QTranslator, QDir, QPoint, QMimeData, QRect, Qt
+from PyQt5.QtGui import QDrag
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog, QLabel, \
+    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton
 
 from managers import js_manager
+from models.EdgePropertyModel import EdgePropertyModel
+from models.NodePropertyModel import NodePropertyModel
 from ui.Ui_DlgEdge import Ui_DlgEdge
 from ui.Ui_MainWindow import Ui_MainWindow
 
@@ -23,9 +28,9 @@ class DlgEdge(QDialog):
         self.ui.cboSource.clear()
         self.ui.txtLabel.setText("")
         self.ui.txtWeight.setText("0")
-        #self.ui.cboSource.addItems(graphm.G.nodes())
+        # self.ui.cboSource.addItems(graphm.G.nodes())
         self.ui.cboTarget.clear()
-        #self.ui.cboTarget.addItems(graphm.G.nodes())
+        # self.ui.cboTarget.addItems(graphm.G.nodes())
 
     def accept(self):
         source = self.ui.cboSource.currentText()
@@ -45,21 +50,141 @@ class GraphView(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        #js_manager.node_updated.connect(self.ui.graphView.apply_settings)
+        # js_manager.node_updated.connect(self.ui.graphView.apply_settings)
 
         self.dlgedge = DlgEdge(self)
-        self.dlgedge.graphView = self.ui.graphView
+        self.dlgedge.graphView = self.ui.graphScene
 
         self.setAcceptDrops(True)
         self.dragStartPosition = QPoint()
 
-        #self._load_state()
+        # self._load_state()
         self._read_json()
+        self.__init_property_view()
+
+    def mousePressEvent(self, event):
+        print('mousePressEvent1')
+        if event.type() == Qt.MouseButton.LeftButton:
+            self.dragStartPosition = event.pos()
+
+    def mouseMoveEvent(self, event):
+        print('mouseMoveEvent1')
+        if (
+                event.pos() - self.dragStartPosition
+        ).manhattanLength() < QApplication.startDragDistance():
+            return
+
+        label = self.childAt(event.pos())
+        if label is None or not isinstance(label, QLabel):
+            return
+
+        self.draggingLabel = label
+        pxm = label.pixmap()
+        if pxm is None:
+            return
+
+        drag = QDrag(label)
+        mime = QMimeData()
+        drag.setMimeData(mime)
+        # mime.setImageData(pxm.toImage())
+        drag.setPixmap(pxm)
+
+        drag.exec_()
+
+    def mouseReleaseEvent(self, event):
+        print('mouseReleaseEvent1')
+        #super(GraphView, self).mouseReleaseEvent(mouseEvent)
+
+    def dragEnterEvent(self, event):
+        print('dragEnterEvent1')
+        event.setAccepted(True)
+
+    def dropEvent(self, event):
+        print('dropEvent1')
+        in_point = self.ui.graphScene.mapFrom(self, event.pos())
+        viewRect = QRect(0, 0, self.ui.graphScene.width(), self.ui.graphScene.height())
+        if not viewRect.contains(in_point):
+            return
+
+        labelObjName = self.draggingLabel.objectName()
+        if labelObjName == "edgeSuspected" or labelObjName == "edgeConfirmed":
+            print('dropping edge')
+            # nodes = graphm.G.nodes()
+            # if len(nodes) > 1:
+            #     self.dlgedge.exec()
+        else:
+            attributes: dict = {
+                "Group": self.draggingLabel.property("Group"),
+                "Type": self.draggingLabel.property("Type"),
+            }
+            attr_property = self.draggingLabel.property("Attributes")
+            if attr_property is not None:
+                attributes["Attributes"] = attr_property
+            else:
+                attributes["Attributes"] = []
+
+            # attributes['Image'] = self.draggingLabel.property('image')
+            self.ui.graphScene.add_node(in_point, "Point", attributes)
 
     def _read_json(self):
         js_manager.init(file_name="type.json")
         self.toolbox = js_manager.tool_box_widget(parent=self.ui.dockWidgetContents_4)
         self.ui.verticalLayout_8.addWidget(self.toolbox)
+
+    def __init_property_view(self):
+        self.tableView = QTableView(self.ui.dockWidgetContents_2)
+        self.tableView.setEditTriggers(QAbstractItemView.DoubleClicked)
+        self.tableView.setSelectionMode(QAbstractItemView.NoSelection)
+        self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.tableView.horizontalHeader().setStretchLastSection(True)
+
+        self.node_property_model = NodePropertyModel(self.tableView)
+        self.node_property_model.dataChanged.connect(self.__node_property_changed)
+        js_manager.node_updated.connect(self.node_property_model.reset)
+
+        self.edge_property_model = EdgePropertyModel(self.tableView)
+        self.edge_property_model.dataChanged.connect(self.__edge_property_changed)
+
+        v_layout = QVBoxLayout(self.ui.dockWidgetContents_2)
+        v_layout.addWidget(self.tableView)
+
+        self.remove_button = QPushButton("", self.ui.dockWidgetContents_2)
+        self.remove_button.setText(self.tr("Delete"))
+        self.remove_button.setEnabled(False)
+        self.remove_button.clicked.connect(self.__remove_selected)
+        v_layout.addWidget(self.remove_button)
+
+    def __node_property_changed(self):
+        self.ui.graphScene.apply_settings()
+
+    def __edge_property_changed(self):
+        self.ui.graphScene.apply_settings()
+
+    def __remove_selected(self):
+        # nodes = list(graphm.cur_G.nodes.data(False))
+        # for i in self.ui.graphView.selected_node_indexes:
+        #     graphm.G.remove_node(nodes[i])
+        #
+        # edges = list(graphm.cur_G.edges.data(False))
+        # for i in self.ui.graphView.edge_selected_indexes:
+        #     graphm.G.remove_edge(edges[i][0], edges[i][1])
+        #
+        # self.ui.graphView.selected_node_indexes = []
+        # self.ui.graphView.edge_selected_indexes = []
+        #
+        # self.ui.graphView.selected_node_names = None
+        # self.ui.graphView.selected_node_pressed_positions = None
+
+        self.__deselected()
+        self.apply_settings()
+
+    def apply_settings(self):
+        self.ui.graphScene.style_updated = True
+        if self.graph_layout_has_changed:
+            # self.ui.graphView.apply_settings(graphm.G.graph["g_type"])
+            self.graph_layout_has_changed = False
+        else:
+            self.ui.graphScene.apply_settings()
 
 class MainView(QMainWindow):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -95,10 +220,10 @@ class MainView(QMainWindow):
         self.menu_file_items.clear()
         action = self.menu_file_items.addAction("")
         action.setText(self.tr("&New"))
-        #action.triggered.connect(self.graph_view.clear_graph)
+        # action.triggered.connect(self.graph_view.clear_graph)
         action = self.menu_file_items.addAction("")
         action.setText(self.tr("&Open..."))
-        #action.triggered.connect(self.graph_view.open_graph)
+        # action.triggered.connect(self.graph_view.open_graph)
         action = self.menu_file_items.addAction("&Import...")
         action.setText(self.tr("&Import..."))
         action.setDisabled(True)
@@ -107,10 +232,10 @@ class MainView(QMainWindow):
         action.setDisabled(True)
         action = self.menu_file_items.addAction("&Save...")
         action.setText(self.tr("&Save..."))
-        #action.triggered.connect(self.graph_view.save_graph)
+        # action.triggered.connect(self.graph_view.save_graph)
         action = self.menu_file_items.addAction("&Export Image...")
         action.setText(self.tr("&Export Image..."))
-        #action.triggered.connect(self.graph_view.export_image)
+        # action.triggered.connect(self.graph_view.export_image)
 
         action = self.menu_file_items.addAction("&Exit")
         action.setText(self.tr("&Exit"))
@@ -167,7 +292,7 @@ class MainView(QMainWindow):
         self.menu_help_items.clear()
         action = self.menu_help_items.addAction("")
         action.setText(self.tr("&About"))
-        #action.triggered.connect(self.show_about_dialog)
+        # action.triggered.connect(self.show_about_dialog)
 
     def exit(self):
         QApplication.closeAllWindows()
