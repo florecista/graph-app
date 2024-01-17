@@ -70,7 +70,7 @@ class GraphView(QMainWindow):
     def mouseMoveEvent(self, event):
         print('mouseMoveEvent1')
         if (
-                event.pos() - self.dragStartPosition
+            event.pos() - self.dragStartPosition
         ).manhattanLength() < QApplication.startDragDistance():
             return
 
@@ -101,8 +101,12 @@ class GraphView(QMainWindow):
 
     def dropEvent(self, event):
         print('dropEvent1')
-        in_point = self.ui.graphScene.mapFrom(self, event.pos())
-        viewRect = QRect(0, 0, self.ui.graphScene.width(), self.ui.graphScene.height())
+        in_point = self.ui.graphView.mapFrom(self, event.pos())
+        x = 0
+        y = 0
+        w = self.ui.graphView.width()
+        h = self.ui.graphView.height()
+        viewRect = QRect(0, 0, w, h)
         if not viewRect.contains(in_point):
             return
 
@@ -123,7 +127,7 @@ class GraphView(QMainWindow):
             else:
                 attributes["Attributes"] = []
 
-            # attributes['Image'] = self.draggingLabel.property('image')
+            attributes['Image'] = self.draggingLabel.property('image')
             self.ui.graphScene.add_node(in_point, "Point", attributes)
 
     def _read_json(self):
