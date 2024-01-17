@@ -101,12 +101,12 @@ class GraphView(QMainWindow):
 
     def dropEvent(self, event):
         print('dropEvent1')
-        in_point = self.ui.graphView.mapFrom(self, event.pos())
-        x = 0
-        y = 0
+        in_point = self.ui.graphView.mapFromScene(event.pos())
+        x = in_point.x()
+        y = in_point.y()
         w = self.ui.graphView.width()
         h = self.ui.graphView.height()
-        viewRect = QRect(0, 0, w, h)
+        viewRect = QRect(x, y, w, h)
         if not viewRect.contains(in_point):
             return
 

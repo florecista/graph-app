@@ -27,8 +27,10 @@ class PlotWidget(QGraphicsScene):
         print(attributes["Position"])
 
         # actually add to scene
-        rectItem = QGraphicsRectItem(0, 0, 20, 20)
-        rectItem.setPos(in_point)
+        x = in_point.x()
+        y = in_point.y()
+        rectItem = QGraphicsRectItem(x, y, 20, 20)
+        #rectItem.setPos(in_point)
         self.addItem(rectItem)
 
     @staticmethod
