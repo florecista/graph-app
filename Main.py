@@ -69,6 +69,7 @@ class GraphView(QMainWindow):
 
     def mouseMoveEvent(self, event):
         print('mouseMoveEvent1')
+
         if (
             event.pos() - self.dragStartPosition
         ).manhattanLength() < QApplication.startDragDistance():
@@ -104,6 +105,7 @@ class GraphView(QMainWindow):
         in_point = self.ui.graphView.mapFromScene(event.pos())
         x = in_point.x()
         y = in_point.y()
+        self.ui.statusbar.showMessage("Dropped at x:% s, y:% s" % (x, y))
         w = self.ui.graphView.width()
         h = self.ui.graphView.height()
         viewRect = QRect(x, y, w, h)
@@ -219,6 +221,8 @@ class MainView(QMainWindow):
 
         self.menu_help_items = self.menubar.addMenu("&Help")
         self.menu_help_items.aboutToShow.connect(self.on_menu_help_about_to_show)
+
+        self.showMaximized()
 
     def on_menu_file_about_to_show(self):
         self.menu_file_items.clear()
