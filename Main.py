@@ -1,10 +1,11 @@
+import os
 import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTranslator, QDir, QPoint, QMimeData, QRect, Qt
-from PyQt5.QtGui import QDrag
+from PyQt5.QtGui import QDrag, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog, QLabel, \
-    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton
+    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton, QGraphicsPixmapItem
 
 from managers import js_manager
 from models.EdgePropertyModel import EdgePropertyModel

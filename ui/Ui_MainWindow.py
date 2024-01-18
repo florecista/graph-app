@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QMenuBar, QStatus
     QTabWidget, QGroupBox, QFormLayout, QLabel, QCheckBox, QComboBox, QPushButton, QSpacerItem, QListView, QFrame, \
     QToolButton, QLineEdit, QGraphicsView
 
+from widgets.GraphView import GraphView
 from widgets.plotwidget import PlotWidget
 
 
@@ -100,7 +101,8 @@ class Ui_MainWindow(object):
 
         self.graphScene = PlotWidget(self.tabGraph)
         self.graphScene.setObjectName(u"graphView")
-        self.graphView = QGraphicsView(self.graphScene)
+        self.graphView = GraphView()
+        self.graphView.setScene(self.graphScene)
 
 
         self.canvasGraph.addWidget(self.graphView)

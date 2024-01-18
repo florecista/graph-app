@@ -1,4 +1,5 @@
 import io
+import os
 
 from PIL import Image
 from PyQt5.QtCore import Qt, QBuffer, QByteArray
@@ -27,11 +28,15 @@ class PlotWidget(QGraphicsScene):
         print(attributes["Position"])
 
         # actually add to scene
-        x = in_point.x()
-        y = in_point.y()
-        rectItem = QGraphicsRectItem(x, y, 20, 20)
-        #rectItem.setPos(in_point)
-        self.addItem(rectItem)
+        icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\people-male.svg"
+        pixmap = QPixmap(icon_path)
+        pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
+        pixmapItem = QGraphicsPixmapItem(pixmap)
+        pixmapItem.setPos(in_point)
+        self.addItem(pixmapItem)
+
+    def resizeEvent(self, event):
+        print('resizeEvent')
 
     @staticmethod
     def __pos_to_str(position):
