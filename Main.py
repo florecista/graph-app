@@ -107,34 +107,20 @@ class GraphTab(QMainWindow):
         window_pos_x = event.pos().x()
         window_pos_y = event.pos().y()
 
-        componentWidth = self.width()
-        componentHeight = self.height()
-
         configuration_panel_left_width = self.ui.dockWidgetFormatPanel.width()
-        configuration_panel_middle_width = self.ui.graphView.width()
-        configuration_panel_right_width = self.ui.dockWidgetPalette.width()
+        x = window_pos_x - configuration_panel_left_width
+        # TODO - this is wrong
+        y = window_pos_y
 
-        configuration_panel_left_height = self.ui.dockWidgetFormatPanel.height()
-        configuration_panel_middle_height = self.ui.graphView.height()
-        configuration_panel_right_height = self.ui.dockWidgetPalette.height()
+        position = QPoint(x, y)
 
-
-        x2 = window_pos_x - configuration_panel_left_width
-
-        # in_point = self.ui.graphView.mapFromScene(event.pos())
-        # x = in_point.x()
-        # y = in_point.y()
-
-        position = QPoint(x2, window_pos_y)
-
-
-        self.ui.statusbar.showMessage("Dropped at x:% s, y:% s" % (x2, window_pos_y))
+        self.ui.statusbar.showMessage("Dropped at x:% s, y:% s" % (x, y))
         w = self.ui.graphView.width()
         h = self.ui.graphView.height()
 
-        viewRect = QRect(x2, window_pos_y, w, h)
+        viewRect = QRect(x, y, w, h)
         if not viewRect.contains(position):
-            print('Position not inside View Rectangle width:% s and x:% s' % (w, x2))
+            print('Position not inside View Rectangle width:% s and x:% s' % (w, x))
             return
 
         labelObjName = self.draggingLabel.objectName()
