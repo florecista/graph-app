@@ -16,15 +16,15 @@ class PlotWidget(QGraphicsScene):
         self.initUI()
 
     def initUI(self):
-        print('dragEnterEvent2')
+        print('PlotWidget.initUI')
 
-    def add_node(self, in_point, type, attributes):
+    def add_node(self, position, type, attributes):
         attributes["Label"] = "Node Name"
-        attributes["Position"] = self.__pos_to_str([in_point.x(), in_point.y()])
+        attributes["Position"] = self.__pos_to_str([position.x(), position.y()])
         attributes["Image"] = {"name": "", "image": ""}
         attributes["Image Scale"] = True
 
-        print('adding ' + attributes['Type'] + ' to ' + str(in_point.x()) + ", " + str(in_point.y()))
+        print('adding ' + attributes['Type'] + ' to ' + str(position.x()) + ", " + str(position.y()))
         print(attributes["Position"])
 
         # actually add to scene
@@ -32,11 +32,16 @@ class PlotWidget(QGraphicsScene):
         pixmap = QPixmap(icon_path)
         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
         pixmapItem = QGraphicsPixmapItem(pixmap)
-        pixmapItem.setPos(in_point)
+        pixmapItem.setPos(position)
+        fullscreen_canvas_width = 1834
+        fullscreen_canvas_height = 1248
+        # The reason for this is that by default, QGraphicsScene computes its sceneRect
+        # by adding all the item rectangles together. When you add the first item, it
+        # automatically uses it as the scene rect. And by default QGraphicsView scales
+        # and centers on the scene rect.
+        # Reference : https://stackoverflow.com/questions/11825722/why-do-the-first-added-item-always-appear-at-the-center-in-a-graphics-scene-view
+        self.setSceneRect(0, 0, fullscreen_canvas_width-10, fullscreen_canvas_height-10)
         self.addItem(pixmapItem)
-
-    def resizeEvent(self, event):
-        print('resizeEvent')
 
     @staticmethod
     def __pos_to_str(position):
@@ -71,6 +76,7 @@ class PlotWidget(QGraphicsScene):
             event.ignore()
 
     def dropEvent(self, event):
+        print('PlotWidget.dropEvent')
         pos = event.pos()
         mimeData = event.mimeData()
         pixMap = QPixmap(mimeData)

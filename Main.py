@@ -14,7 +14,7 @@ from ui.Ui_DlgEdge import Ui_DlgEdge
 from ui.Ui_MainWindow import Ui_MainWindow
 
 
-class DlgEdge(QDialog):
+class EdgeDialog(QDialog):
     graphView = None
 
     def __init__(self, parent):
@@ -43,7 +43,7 @@ class DlgEdge(QDialog):
         super().accept()
 
 
-class GraphView(QMainWindow):
+class GraphTab(QMainWindow):
     selectedPoints = []
 
     def __init__(self):
@@ -53,7 +53,7 @@ class GraphView(QMainWindow):
 
         # js_manager.node_updated.connect(self.ui.graphView.apply_settings)
 
-        self.dlgedge = DlgEdge(self)
+        self.dlgedge = EdgeDialog(self)
         self.dlgedge.graphView = self.ui.graphScene
 
         self.setAcceptDrops(True)
@@ -64,12 +64,12 @@ class GraphView(QMainWindow):
         self.__init_property_view()
 
     def mousePressEvent(self, event):
-        print('mousePressEvent1')
+        print('GraphTab.mousePressEvent1')
         if event.type() == Qt.MouseButton.LeftButton:
             self.dragStartPosition = event.pos()
 
     def mouseMoveEvent(self, event):
-        print('mouseMoveEvent1')
+        print('GraphTab.mouseMoveEvent1')
 
         if (
             event.pos() - self.dragStartPosition
@@ -94,23 +94,47 @@ class GraphView(QMainWindow):
         drag.exec_()
 
     def mouseReleaseEvent(self, event):
-        print('mouseReleaseEvent1')
+        print('GraphTab.mouseReleaseEvent1')
         #super(GraphView, self).mouseReleaseEvent(mouseEvent)
 
     def dragEnterEvent(self, event):
-        print('dragEnterEvent1')
+        print('GraphTab.dragEnterEvent1')
         event.setAccepted(True)
 
     def dropEvent(self, event):
-        print('dropEvent1')
-        in_point = self.ui.graphView.mapFromScene(event.pos())
-        x = in_point.x()
-        y = in_point.y()
-        self.ui.statusbar.showMessage("Dropped at x:% s, y:% s" % (x, y))
+        print('GraphTab.dropEvent')
+
+        window_pos_x = event.pos().x()
+        window_pos_y = event.pos().y()
+
+        componentWidth = self.width()
+        componentHeight = self.height()
+
+        configuration_panel_left_width = self.ui.dockWidgetFormatPanel.width()
+        configuration_panel_middle_width = self.ui.graphView.width()
+        configuration_panel_right_width = self.ui.dockWidgetPalette.width()
+
+        configuration_panel_left_height = self.ui.dockWidgetFormatPanel.height()
+        configuration_panel_middle_height = self.ui.graphView.height()
+        configuration_panel_right_height = self.ui.dockWidgetPalette.height()
+
+
+        x2 = window_pos_x - configuration_panel_left_width
+
+        # in_point = self.ui.graphView.mapFromScene(event.pos())
+        # x = in_point.x()
+        # y = in_point.y()
+
+        position = QPoint(x2, window_pos_y)
+
+
+        self.ui.statusbar.showMessage("Dropped at x:% s, y:% s" % (x2, window_pos_y))
         w = self.ui.graphView.width()
         h = self.ui.graphView.height()
-        viewRect = QRect(x, y, w, h)
-        if not viewRect.contains(in_point):
+
+        viewRect = QRect(x2, window_pos_y, w, h)
+        if not viewRect.contains(position):
+            print('Position not inside View Rectangle width:% s and x:% s' % (w, x2))
             return
 
         labelObjName = self.draggingLabel.objectName()
@@ -131,7 +155,7 @@ class GraphView(QMainWindow):
                 attributes["Attributes"] = []
 
             attributes['Image'] = self.draggingLabel.property('image')
-            self.ui.graphScene.add_node(in_point, "Point", attributes)
+            self.ui.graphScene.add_node(position, "Point", attributes)
 
     def _read_json(self):
         js_manager.init(file_name="type.json")
@@ -193,7 +217,7 @@ class GraphView(QMainWindow):
         else:
             self.ui.graphScene.apply_settings()
 
-class MainView(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
@@ -201,9 +225,9 @@ class MainView(QMainWindow):
         self.translator = None
 
         self.tabWidget = QTabWidget()
-        self.graph_view = GraphView()
-        self.tabWidget.addTab(self.graph_view, self.tr("Graph"))
-        self.tabWidget.addTab(QWidget(), self.tr("Timeline"))
+        self.graph_view = GraphTab() # Graph Tab
+        self.tabWidget.addTab(self.graph_view, self.tr("Graph")) # Add Graph Tab
+        self.tabWidget.addTab(QWidget(), self.tr("Timeline")) # Add Timeline Tab
         self.setCentralWidget(self.tabWidget)
 
         self.menubar = QMenuBar()
@@ -313,7 +337,7 @@ class MainView(QMainWindow):
 
 
 app = QApplication([])
-mainwindow = MainView()
+mainwindow = MainWindow()
 mainwindow.show()
 sys.exit(app.exec_())
 # END: bypass license check
