@@ -33,8 +33,8 @@ class PlotWidget(QGraphicsScene):
         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
         pixmapItem = QGraphicsPixmapItem(pixmap)
         pixmapItem.setPos(position)
-        fullscreen_canvas_width = 1834
-        fullscreen_canvas_height = 1248
+        fullscreen_canvas_width = self.parent().width()
+        fullscreen_canvas_height = self.parent().height()
         # The reason for this is that by default, QGraphicsScene computes its sceneRect
         # by adding all the item rectangles together. When you add the first item, it
         # automatically uses it as the scene rect. And by default QGraphicsView scales
