@@ -155,7 +155,7 @@ class GraphTab(QMainWindow):
                 attributes["Attributes"] = []
 
             attributes['Image'] = self.draggingLabel.property('image')
-            self.ui.graphScene.add_node(position, "Point", attributes)
+            self.ui.graphScene.add_node(position, attributes)
 
     def _read_json(self):
         js_manager.init(file_name="type.json")

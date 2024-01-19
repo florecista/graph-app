@@ -1,6 +1,7 @@
 import io
 import os
 
+from managers import js_manager
 from PIL import Image
 from PyQt5.QtCore import Qt, QBuffer, QByteArray
 from PyQt5.QtGui import QPixmap, QImage
@@ -18,7 +19,14 @@ class PlotWidget(QGraphicsScene):
     def initUI(self):
         print('PlotWidget.initUI')
 
-    def add_node(self, position, type, attributes):
+    def add_node(self, position, attributes):
+
+        image = ''
+        for item in js_manager.data[attributes["Group"]]:
+            if item['label'] == attributes["Type"]:
+                image = item['icon']
+                break
+
         attributes["Label"] = "Node Name"
         attributes["Position"] = self.__pos_to_str([position.x(), position.y()])
         attributes["Image"] = {"name": "", "image": ""}
@@ -28,7 +36,7 @@ class PlotWidget(QGraphicsScene):
         print(attributes["Position"])
 
         # actually add to scene
-        icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\people-male.svg"
+        icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\\" + image
         pixmap = QPixmap(icon_path)
         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
         pixmapItem = QGraphicsPixmapItem(pixmap)
