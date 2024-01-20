@@ -8,8 +8,10 @@ from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsPixmapItem, \
     QGraphicsItem
 
+from widgets.GraphItem import GraphItem
 
-class PlotWidget(QGraphicsScene):
+
+class GraphScene(QGraphicsScene):
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -37,12 +39,16 @@ class PlotWidget(QGraphicsScene):
         print('adding ' + attributes['Type'] + ' to ' + str(position.x()) + ", " + str(position.y()))
         print(attributes["Position"])
 
-        # actually add to scene
+        # build pixmap
         icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\\" + image
         pixmap = QPixmap(icon_path)
         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
-        pixmapItem = QGraphicsPixmapItem(pixmap)
-        pixmapItem.setPos(position)
+
+        # build graph item
+        graphItem = GraphItem(pixmap)
+        graphItem.attributes = attributes
+        graphItem.setPos(position)
+
         fullscreen_canvas_width = self.parent().width()
         fullscreen_canvas_height = self.parent().height()
         # The reason for this is that by default, QGraphicsScene computes its sceneRect
@@ -51,7 +57,9 @@ class PlotWidget(QGraphicsScene):
         # and centers on the scene rect.
         # Reference : https://stackoverflow.com/questions/11825722/why-do-the-first-added-item-always-appear-at-the-center-in-a-graphics-scene-view
         self.setSceneRect(0, 0, fullscreen_canvas_width-offset, fullscreen_canvas_height-offset)
-        self.addItem(pixmapItem)
+
+        # add item to scene
+        self.addItem(graphItem)
 
     @staticmethod
     def __pos_to_str(position):
@@ -63,7 +71,7 @@ class PlotWidget(QGraphicsScene):
 
     @staticmethod
     def __str_to_image(val: str) -> Image:
-        img = QImage.fromData(PlotWidget.__str_to_q_byte_array(val))
+        img = QImage.fromData(GraphScene.__str_to_q_byte_array(val))
         buffer = QBuffer()
         buffer.open(QBuffer.ReadWrite)
         img.save(buffer, "PNG")
