@@ -3,7 +3,7 @@ import os
 
 from managers import js_manager
 from PIL import Image
-from PyQt5.QtCore import Qt, QBuffer, QByteArray
+from PyQt5.QtCore import Qt, QBuffer, QByteArray, QPoint
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsPixmapItem, \
     QGraphicsItem
@@ -20,6 +20,8 @@ class PlotWidget(QGraphicsScene):
         print('PlotWidget.initUI')
 
     def add_node(self, position, attributes):
+        offset = 50
+        position = QPoint(position.x()-offset, position.y()-offset)
 
         image = ''
         for item in js_manager.data[attributes["Group"]]:
@@ -48,7 +50,7 @@ class PlotWidget(QGraphicsScene):
         # automatically uses it as the scene rect. And by default QGraphicsView scales
         # and centers on the scene rect.
         # Reference : https://stackoverflow.com/questions/11825722/why-do-the-first-added-item-always-appear-at-the-center-in-a-graphics-scene-view
-        self.setSceneRect(0, 0, fullscreen_canvas_width-10, fullscreen_canvas_height-10)
+        self.setSceneRect(0, 0, fullscreen_canvas_width-offset, fullscreen_canvas_height-offset)
         self.addItem(pixmapItem)
 
     @staticmethod
