@@ -21,6 +21,7 @@ class GraphItem(QGraphicsPixmapItem):
     def _set_pixmap(self, _pixmap):
         self.pixmap = _pixmap
 
+    # Reference - https://stackoverflow.com/questions/72535825/pyqt5-qgraphicsscene-mouse-item-with-click-and-drop-without-holding-press
     moving = False
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
@@ -47,7 +48,6 @@ class GraphItem(QGraphicsPixmapItem):
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
-        print('GraphItem.mouseReleaseEvent')
         if event.type() == Qt.MouseButton.LeftButton or event.pos() not in self.boundingRect():
             return
 

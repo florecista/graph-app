@@ -16,10 +16,10 @@ class GraphScene(QGraphicsScene):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.initUI()
+        # self.initUI()
 
-    def initUI(self):
-        print('GraphScene.initUI')
+    # def initUI(self):
+    #     print('GraphScene.initUI')
 
     def add_node(self, position, attributes):
         offset = 50
@@ -92,11 +92,11 @@ class GraphScene(QGraphicsScene):
             event.ignore()
 
     def dropEvent(self, event):
-        print('PlotWidget.dropEvent')
+        print('GraphScene.dropEvent')
         pos = event.pos()
         mimeData = event.mimeData()
         pixMap = QPixmap(mimeData)
-        print('dropEvent2')
+
         # rectItem = QGraphicsRectItem(0, 0, 20, 20)
         # rectItem.setPos(event.pos())
         # self.addItem(rectItem)
@@ -109,9 +109,11 @@ class GraphScene(QGraphicsScene):
         event.acceptProposedAction()
 
     def dragLeaveEvent(self, event):
+        print('GraphScene.dragLeaveEvent')
         event.acceptProposedAction()
 
     def dragMoveEvent(self, event):
+        print('GraphScene.dragMoveEvent')
         if event.mimeData().hasImage():
             event.accept()
         else:
