@@ -64,7 +64,7 @@ class GraphTab(QMainWindow):
         self.__init_property_view()
 
     def mousePressEvent(self, event):
-        print('GraphTab.mousePressEvent1')
+        print('GraphTab.mousePressEvent')
         if event.type() == Qt.MouseButton.LeftButton:
             self.dragStartPosition = event.pos()
 
@@ -94,11 +94,11 @@ class GraphTab(QMainWindow):
         drag.exec_()
 
     def mouseReleaseEvent(self, event):
-        print('GraphTab.mouseReleaseEvent1')
+        print('GraphTab.mouseReleaseEvent')
         #super(GraphView, self).mouseReleaseEvent(mouseEvent)
 
     def dragEnterEvent(self, event):
-        print('GraphTab.dragEnterEvent1')
+        print('GraphTab.dragEnterEvent')
         event.setAccepted(True)
 
     def dropEvent(self, event):

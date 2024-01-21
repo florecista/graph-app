@@ -19,7 +19,7 @@ class GraphScene(QGraphicsScene):
         self.initUI()
 
     def initUI(self):
-        print('PlotWidget.initUI')
+        print('GraphScene.initUI')
 
     def add_node(self, position, attributes):
         offset = 50
@@ -36,9 +36,6 @@ class GraphScene(QGraphicsScene):
         attributes["Image"] = {"name": "", "image": ""}
         attributes["Image Scale"] = True
 
-        print('adding ' + attributes['Type'] + ' to ' + str(position.x()) + ", " + str(position.y()))
-        print(attributes["Position"])
-
         # build pixmap
         icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\\" + image
         pixmap = QPixmap(icon_path)
@@ -48,6 +45,7 @@ class GraphScene(QGraphicsScene):
         graphItem = GraphItem(pixmap)
         graphItem.attributes = attributes
         graphItem.setPos(position)
+        graphItem.setFlags(QGraphicsPixmapItem.ItemIsMovable)
 
         fullscreen_canvas_width = self.parent().width()
         fullscreen_canvas_height = self.parent().height()
