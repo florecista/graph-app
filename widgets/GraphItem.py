@@ -1,13 +1,56 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtGui import QPixmap, QPainter, QPen
 from PyQt5.QtWidgets import QGraphicsPixmapItem, QApplication
+
+from widgets.GraphEdgePoint import GraphEdgePoint
 
 
 class GraphItem(QGraphicsPixmapItem):
+    pen = QtGui.QPen(Qt.red, 2)
+    brush = QtGui.QBrush(QtGui.QColor(31, 176, 224))
+    controlBrush = QtGui.QBrush(QtGui.QColor(214, 13, 36))
 
-    def __init__(self, parent):
+    def __init__(self, parent, left=False, right=False):
         super().__init__(parent)
+
+        self._is_hovered = False
+
         self.startPosition = None
+
+        self.controls = []
+
+        for onLeft, create in enumerate((right, left)):
+            if create:
+                control = GraphEdgePoint(self, onLeft)
+                self.controls.append(control)
+                control.setPen(self.pen)
+                control.setBrush(self.controlBrush)
+                if onLeft:
+                    control.setX(50)
+                control.setY(20)
+
+    ## Adding hover
+    ## Reference - https://stackoverflow.com/questions/56266185/painting-qgraphicspixmapitem-border-on-hover
+    def hoverEnterEvent(self, event):
+        self._is_hovered = True
+        self.update()
+        super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        self._is_hovered = False
+        self.update()
+        super().hoverLeaveEvent(event)
+
+    def paint(self, painter, option, widget=None):
+        super().paint(painter, option, widget)
+        if self._is_hovered:
+            painter.save()
+            pen = QtGui.QPen(QtGui.QColor("black"))
+            pen.setWidth(4)
+            painter.setPen(pen)
+            painter.drawRect(self.boundingRect())
+            painter.restore()
 
     def _get_attributes(self):
         return self.attributes
