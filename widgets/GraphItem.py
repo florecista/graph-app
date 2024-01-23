@@ -46,8 +46,8 @@ class GraphItem(QGraphicsPixmapItem):
         super().paint(painter, option, widget)
         if self._is_hovered:
             painter.save()
-            pen = QtGui.QPen(QtGui.QColor("black"))
-            pen.setWidth(4)
+            pen = QtGui.QPen(QtGui.QColor("red"))
+            pen.setWidth(2)
             painter.setPen(pen)
             painter.drawRect(self.boundingRect())
             painter.restore()
