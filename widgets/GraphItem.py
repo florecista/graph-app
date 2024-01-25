@@ -44,13 +44,19 @@ class GraphItem(QGraphicsPixmapItem):
 
     def paint(self, painter, option, widget=None):
         super().paint(painter, option, widget)
-        if self._is_hovered:
+        if self._is_hovered or self.isSelected():
             painter.save()
             pen = QtGui.QPen(QtGui.QColor("red"))
             pen.setWidth(2)
             painter.setPen(pen)
             painter.drawRect(self.boundingRect())
             painter.restore()
+
+    def _get_label(self):
+        return self.label
+
+    def _set_label(self, _label):
+        self.label = _label
 
     def _get_attributes(self):
         return self.attributes

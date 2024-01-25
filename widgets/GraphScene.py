@@ -3,6 +3,7 @@ import os
 
 from PyQt5 import QtGui, QtCore
 
+import widgets.GraphItem
 from managers import js_manager
 from PIL import Image
 from PyQt5.QtCore import Qt, QBuffer, QByteArray, QPoint
@@ -47,6 +48,7 @@ class GraphScene(QGraphicsScene):
 
         # build graph item
         graphItem = GraphItem(pixmap, left=True)
+        graphItem.label = attributes["Type"]
         graphItem.attributes = attributes
         graphItem.setPos(position)
         graphItem.setFlag(QGraphicsPixmapItem.ItemIsSelectable)
