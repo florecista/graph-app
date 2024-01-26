@@ -67,6 +67,23 @@ class GraphView(QGraphicsView):
         self.changeRubberBand = False
         QGraphicsView.mouseReleaseEvent(self,event)
 
+    def apply_settings(self):
+        print('apply_settings')
+
+        count = 0
+        for child in self.items():
+            if (isinstance(child, GraphItem)):
+                child.show_icon = False
+                print(child.label)
+                if child.isSelected():
+                    print(child.label, 'selected')
+                count = count + 1
+
+        ## Reference - https://stackoverflow.com/questions/12439082/qgraphicssceneclear-clearing-scene-but-not-the-view
+        self.viewport().update()
+
+        print('changed ', str(count))
+
     def resizeEvent(self, event):
         super(GraphView, self).resizeEvent(event)
         if self._center:

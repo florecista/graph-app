@@ -7,11 +7,13 @@ from PyQt5.QtGui import QDrag, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog, QLabel, \
     QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton, QGraphicsPixmapItem
 
+import constants
 from managers import js_manager
 from models.EdgePropertyModel import EdgePropertyModel
 from models.NodePropertyModel import NodePropertyModel
 from ui.Ui_DlgEdge import Ui_DlgEdge
 from ui.Ui_MainWindow import Ui_MainWindow
+from utils import populate_listwidget_enum
 
 
 class EdgeDialog(QDialog):
@@ -61,6 +63,7 @@ class GraphTab(QMainWindow):
 
         # self._load_state()
         self._read_json()
+        self.__init_gui()
         self.__init_property_view()
 
     def mousePressEvent(self, event):
@@ -143,6 +146,102 @@ class GraphTab(QMainWindow):
         self.toolbox = js_manager.tool_box_widget(parent=self.ui.dockWidgetContents_4)
         self.ui.verticalLayout_8.addWidget(self.toolbox)
 
+    def __init_gui(self):
+        # Style Tab
+        # self.ui.chkStyleNodeUseImage.clicked.connect(
+        #     self.__gui_style_node_use_image_changed
+        # )
+        # self.ui.chkStyleNodeShowIcon.clicked.connect(
+        #     self.__gui_style_node_show_icon_changed
+        # )
+        # self.ui.chkStyleNodeShowLabel.clicked.connect(
+        #     self.__gui_style_node_show_label_changed
+        # )
+
+        self.ui.cboNodeSize.addItem("30x30", 30)
+        self.ui.cboNodeSize.addItem("50x50", 50)
+        self.ui.cboNodeSize.addItem("100x100", 100)
+        self.ui.cboNodeSize.addItem("200x200", 200)
+        self.ui.cboNodeSize.addItem("300x300", 300)
+        #self.ui.cboNodeSize.activated.connect(self.__gui_node_size_changed)
+
+        populate_listwidget_enum(
+            self.ui.cboStyleNodeLabelPosition, constants.LabelPosition
+        )
+        # self.ui.cboStyleNodeLabelPosition.activated.connect(
+        #     self.__gui_node_label_position_changed
+        # )
+
+        self.ui.cboStyleNodeLabelSize.addItem("8", 8)
+        self.ui.cboStyleNodeLabelSize.addItem("16", 16)
+        self.ui.cboStyleNodeLabelSize.addItem("24", 24)
+        self.ui.cboStyleNodeLabelSize.addItem("32", 32)
+        # self.ui.cboStyleNodeLabelSize.activated.connect(
+        #     self.__gui_node_label_size_changed
+        # )
+
+        populate_listwidget_enum(self.ui.cboStyleNodeShape, constants.NodeShapes)
+        # self.ui.cboStyleNodeShape.activated.connect(self.__gui_style_node_shape_changed)
+        #
+        # self.ui.buttonStyleNodeShapeForegroundColor.clicked.connect(
+        #     self.__gui_node_foreground_color
+        # )
+        # self.ui.buttonStyleNodeShapeBackgroundColor.clicked.connect(
+        #     self.__gui_node_background_color
+        # )
+        # self.ui.buttonStyleNodeShapeHighlightColor.clicked.connect(
+        #     self.__gui_node_highlight_color
+        # )
+        # self.ui.buttonStyleNodeShapeLabelFontColor.clicked.connect(
+        #     self.__gui_node_label_text_color
+        # )
+        #
+        # self.ui.chkStyleEdgeShowLabel.clicked.connect(
+        #     self.__gui_style_edge_show_label_changed
+        # )
+        #
+        # self.ui.chkStyleEdgeDirectionArrow.clicked.connect(
+        #     self.__gui_style_edge_show_arrow_changed
+        # )
+
+        # Advanced Tab
+        populate_listwidget_enum(self.ui.cboCentralityType, constants.CentralityType)
+        # self.ui.cboCentralityType.activated.connect(self.__gui_centrality_type_changed)
+        #
+        populate_listwidget_enum(
+            self.ui.cboCentralityShowBy, constants.CentralityShowBy
+        )
+        # self.ui.cboCentralityShowBy.activated.connect(
+        #     self.__gui_centrality_show_by_changed
+        # )
+
+        populate_listwidget_enum(
+            self.ui.cboCentralityGradient, constants.CentralityGradient
+        )
+        # self.ui.cboCentralityGradient.activated.connect(
+        #     self.__gui_centrality_gradient_changed
+        # )
+
+        populate_listwidget_enum(self.ui.cboGraphConfiguration, constants.GraphLayout)
+        # self.ui.cboGraphConfiguration.activated.connect(self.__gui_graph_layout_changed)
+
+        populate_listwidget_enum(
+            self.ui.cboGraphHideOrphans, constants.GraphHideOrphans
+        )
+        # self.ui.cboGraphHideOrphans.activated.connect(
+        #     self.__gui_graph_hide_orphans_changed
+        # )
+
+        # General
+        self.ui.buttonApplyStyle.clicked.connect(self.apply_settings)
+
+        # self.ui.buttonGraphLayoutCircle.clicked.connect(self.graphLayoutCircleClicked)
+        # self.ui.buttonGraphLayoutRadial.clicked.connect(self.graphLayoutRadialClicked)
+        # self.ui.buttonGraphLayoutTree.clicked.connect(self.graphLayoutTreeClicked)
+        # self.ui.buttonGraphLayoutSubGraph.clicked.connect(
+        #     self.graphLayoutSubGraphClicked
+        # )
+
     def __init_property_view(self):
         self.tableView = QTableView(self.ui.dockWidgetContents_2)
         self.tableView.setEditTriggers(QAbstractItemView.DoubleClicked)
@@ -192,11 +291,12 @@ class GraphTab(QMainWindow):
 
     def apply_settings(self):
         self.ui.graphScene.style_updated = True
-        if self.graph_layout_has_changed:
-            # self.ui.graphView.apply_settings(graphm.G.graph["g_type"])
-            self.graph_layout_has_changed = False
-        else:
-            self.ui.graphScene.apply_settings()
+        #if self.graph_layout_has_changed:
+        #    self.ui.graphView.apply_settings()
+        #    self.graph_layout_has_changed = False
+        #else:
+        #self.ui.graphScene.apply_settings()
+        self.ui.graphView.apply_settings()
 
 class MainWindow(QMainWindow):
     def __init__(self, parent: QWidget | None = None) -> None:

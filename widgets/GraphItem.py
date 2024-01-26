@@ -14,6 +14,9 @@ class GraphItem(QGraphicsPixmapItem):
     def __init__(self, parent, left=False, right=False):
         super().__init__(parent)
 
+        self.show_icon = True
+        self.use_image = False
+
         self._is_hovered = False
 
         self.startPosition = None
@@ -43,14 +46,27 @@ class GraphItem(QGraphicsPixmapItem):
         super().hoverLeaveEvent(event)
 
     def paint(self, painter, option, widget=None):
-        super().paint(painter, option, widget)
-        if self._is_hovered or self.isSelected():
+        if not self.show_icon or self._is_hovered or self.isSelected():
             painter.save()
             pen = QtGui.QPen(QtGui.QColor("red"))
             pen.setWidth(2)
             painter.setPen(pen)
             painter.drawRect(self.boundingRect())
             painter.restore()
+        else:
+            super().paint(painter, option, widget)
+
+    def _get_use_image(self):
+        return self.use_image
+
+    def _set_use_image(self, _use_image):
+        self.use_image = _use_image
+
+    def _get_show_icon(self):
+        return self.show_icon
+
+    def _set_show_icon(self, _show_icon):
+        self.show_icon = _show_icon
 
     def _get_label(self):
         return self.label
