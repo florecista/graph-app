@@ -195,9 +195,9 @@ class GraphTab(QMainWindow):
         self.ui.buttonStyleNodeShapeForegroundColor.clicked.connect(
             self.__gui_node_foreground_color
         )
-        # self.ui.buttonStyleNodeShapeBackgroundColor.clicked.connect(
-        #     self.__gui_node_background_color
-        # )
+        self.ui.buttonStyleNodeShapeBackgroundColor.clicked.connect(
+            self.__gui_node_background_color
+        )
         # self.ui.buttonStyleNodeShapeHighlightColor.clicked.connect(
         #     self.__gui_node_highlight_color
         # )
@@ -253,11 +253,9 @@ class GraphTab(QMainWindow):
 
     def __gui_node_foreground_color(self):
         self.ui.graphView.node_foreground_color = QColorDialog.getColor()
-        # if color.isValid():
-        #     graphm.G.graph["node_foreground_color"] = color.name()
-        #     self.ui.buttonStyleNodeShapeForegroundColor.setStyleSheet(
-        #         "QPushButton { background-color: " + color.name() + "; }"
-        #     )
+
+    def __gui_node_background_color(self):
+        self.ui.graphView.node_background_color = QColorDialog.getColor()
 
     def __init_property_view(self):
         self.tableView = QTableView(self.ui.dockWidgetContents_2)

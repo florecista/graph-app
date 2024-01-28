@@ -91,7 +91,7 @@ class GraphItem(QGraphicsPixmapItem):
             brush = QtGui.QBrush(self.node_foreground_color)
             painter.setBrush(brush)
             # Outline
-            pen = QtGui.QPen(QtGui.QColor("black"))
+            pen = QtGui.QPen(self.node_background_color)
             pen.setWidth(2)
             painter.setPen(pen)
 

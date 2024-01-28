@@ -248,7 +248,7 @@ class Ui_MainWindow(object):
         self.buttonStyleNodeShapeBackgroundColor = QPushButton(self.styleNodeGroupBox)
         self.buttonStyleNodeShapeBackgroundColor.setObjectName(u"buttonStyleNodeShapeBackgroundColor")
         self.buttonStyleNodeShapeBackgroundColor.setMaximumSize(QSize(25, 25))
-        self.buttonStyleNodeShapeBackgroundColor.setStyleSheet(u"background: rgb(255, 255, 0)")
+        self.buttonStyleNodeShapeBackgroundColor.setStyleSheet(u"background: rgb(0, 0, 0)")
 
         self.formLayout.setWidget(8, QFormLayout.FieldRole, self.buttonStyleNodeShapeBackgroundColor)
 

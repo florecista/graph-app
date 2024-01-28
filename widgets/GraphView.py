@@ -17,7 +17,7 @@ class GraphView(QGraphicsView):
     nodes_selection_changed = pyqtSignal(dict)
 
     node_foreground_color = QColor(255, 0, 0)
-    node_background_color = QColor(255, 255, 0)
+    node_background_color = QColor(0, 0, 0)
     node_highlight_color = QColor(0, 0, 255)
     node_label_text_color = QColor(0, 255, 0)
 
@@ -115,6 +115,7 @@ class GraphView(QGraphicsView):
                 child.show_icon = parent_window.ui.chkStyleNodeShowIcon.isChecked()
 
                 child.node_foreground_color = self.node_foreground_color
+                child.node_background_color = self.node_background_color
 
                 node_size = parent_window.ui.cboNodeSize.currentData()
                 child.node_size = node_size
