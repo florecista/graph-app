@@ -23,11 +23,10 @@ class Ui_MainWindow(object):
         self.tabGraph.setObjectName(u"tabGraph")
         self.verticalLayout_4 = QVBoxLayout(self.tabGraph)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(0,0,0,0)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
 
         self.toolbarNorth = QHBoxLayout()
         self.toolbarNorth.setObjectName(u"toolbarNorth")
-
 
         self.buttonGraphLayoutCircle = QToolButton(self.tabGraph)
         self.buttonGraphLayoutCircle.setObjectName(u"buttonGraphLayoutCircle")
@@ -74,7 +73,7 @@ class Ui_MainWindow(object):
 
         self.lineEditGraphFilter = QLineEdit(self.tabGraph)
         self.lineEditGraphFilter.setObjectName(u"lineEditGraphFilter")
-        self.lineEditGraphFilter.setMaximumSize(QSize(150,16777215))
+        self.lineEditGraphFilter.setMaximumSize(QSize(150, 16777215))
 
         self.toolbarNorth.addWidget(self.lineEditGraphFilter)
 
@@ -98,22 +97,19 @@ class Ui_MainWindow(object):
         self.canvasGraph = QVBoxLayout()
         self.canvasGraph.setObjectName(u"canvasGraph")
 
-
         self.graphScene = GraphScene(self.tabGraph)
         self.graphScene.setObjectName(u"graphView")
         self.graphView = GraphView()
         self.graphView.setScene(self.graphScene)
 
-
         self.canvasGraph.addWidget(self.graphView)
 
         # This is connected here because it needs the PlotWidget to be instantiated before it can be passed as a parameter
-        #self.lineEditGraphFilter.textEdited.connect(self.graphView.eventFilterGraph)
+        # self.lineEditGraphFilter.textEdited.connect(self.graphView.eventFilterGraph)
 
         self.verticalLayout_4.addLayout(self.canvasGraph)
 
         self.verticalLayout_2.addWidget(self.tabGraph)
-
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -170,6 +166,7 @@ class Ui_MainWindow(object):
 
         self.chkStyleNodeShowIcon = QCheckBox(self.styleNodeGroupBox)
         self.chkStyleNodeShowIcon.setObjectName(u"chkStyleNodeShowIcon")
+        self.chkStyleNodeShowIcon.setChecked(True)
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.chkStyleNodeShowIcon)
 
@@ -470,7 +467,7 @@ class Ui_MainWindow(object):
         self.edgeSuspected = QLabel(self.dockWidgetContents_4)
         self.edgeSuspected.setObjectName(u"edgeSuspected")
         icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\edge-suspected.png"
-        #self.edgeSuspected.setPixmap(QPixmap(u":/images/edge-suspected.png"))
+        # self.edgeSuspected.setPixmap(QPixmap(u":/images/edge-suspected.png"))
         self.edgeSuspected.setPixmap(QPixmap(icon_path))
         self.edgeSuspected.setAlignment(Qt.AlignCenter)
 
@@ -479,7 +476,7 @@ class Ui_MainWindow(object):
         self.edgeConfirmed = QLabel(self.dockWidgetContents_4)
         self.edgeConfirmed.setObjectName(u"edgeConfirmed")
         icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\edge-confirmed.png"
-        #self.edgeConfirmed.setPixmap(QPixmap(u":/images/edge-confirmed.png"))
+        # self.edgeConfirmed.setPixmap(QPixmap(u":/images/edge-confirmed.png"))
         self.edgeConfirmed.setPixmap(QPixmap(icon_path))
         self.edgeConfirmed.setAlignment(Qt.AlignCenter)
 
@@ -507,6 +504,7 @@ class Ui_MainWindow(object):
         self.settingTabWidget.setCurrentIndex(0)
 
         QMetaObject.connectSlotsByName(MainWindow)
+
     # setupUi
 
     def retranslateUi(self, MainWindow):
@@ -526,31 +524,40 @@ class Ui_MainWindow(object):
         self.lblStyleNodeLabelPosition.setText(QCoreApplication.translate("MainWindow", "Node Label Position", None))
         self.lblStyleNodeLabelSize.setText(QCoreApplication.translate("MainWindow", "Node Label Size", None))
         self.lblStyleNodeShape.setText(QCoreApplication.translate("MainWindow", "Shape", None))
-        self.lblStyleNodeShapeForegroundColor.setText(QCoreApplication.translate("MainWindow", "Shape Foreground Color", None))
-        self.lblStyleNodeShapeBackgroundColor.setText(QCoreApplication.translate("MainWindow", "Shape Background Color", None))
-        self.lblStyleNodeShapeHighlightColor.setText(QCoreApplication.translate("MainWindow", "Shape Highlight Color", None))
-        self.lblStyleNodeShapeLabelFontColor.setText(QCoreApplication.translate("MainWindow", "Shape Label Font Color", None))
+        self.lblStyleNodeShapeForegroundColor.setText(
+            QCoreApplication.translate("MainWindow", "Shape Foreground Color", None))
+        self.lblStyleNodeShapeBackgroundColor.setText(
+            QCoreApplication.translate("MainWindow", "Shape Background Color", None))
+        self.lblStyleNodeShapeHighlightColor.setText(
+            QCoreApplication.translate("MainWindow", "Shape Highlight Color", None))
+        self.lblStyleNodeShapeLabelFontColor.setText(
+            QCoreApplication.translate("MainWindow", "Shape Label Font Color", None))
         self.buttonStyleNodeShapeForegroundColor.setText("")
         self.buttonStyleNodeShapeBackgroundColor.setText("")
         self.buttonStyleNodeShapeHighlightColor.setText("")
         self.buttonStyleNodeShapeLabelFontColor.setText("")
         self.styleEdgeGroupBox.setTitle(QCoreApplication.translate("MainWindow", "Edge Configuration", None))
-        self.lblStyleEdgeShowLabel.setText(QCoreApplication.translate("MainWindow", "Show Edge Label               ", None))
+        self.lblStyleEdgeShowLabel.setText(
+            QCoreApplication.translate("MainWindow", "Show Edge Label               ", None))
         self.chkStyleEdgeShowLabel.setText("")
         self.lblStyleEdgeDirectionArrow.setText(QCoreApplication.translate("MainWindow", "Show Edge Arrow", None))
         self.chkStyleEdgeDirectionArrow.setText("")
-        self.settingTabWidget.setTabText(self.settingTabWidget.indexOf(self.tabSettingStyle), QCoreApplication.translate("MainWindow", "Style", None))
-        self.groupingConfigurationGroupBox.setTitle(QCoreApplication.translate("MainWindow", "Grouping Configuration", None))
+        self.settingTabWidget.setTabText(self.settingTabWidget.indexOf(self.tabSettingStyle),
+                                         QCoreApplication.translate("MainWindow", "Style", None))
+        self.groupingConfigurationGroupBox.setTitle(
+            QCoreApplication.translate("MainWindow", "Grouping Configuration", None))
         self.lblGroupAttributes.setText(QCoreApplication.translate("MainWindow", "Attributes", None))
         self.lblGroupValues.setText(QCoreApplication.translate("MainWindow", "Values", None))
-        self.centralityGroupingConfigurationGroupBox.setTitle(QCoreApplication.translate("MainWindow", "Centrality Grouping Configuration", None))
+        self.centralityGroupingConfigurationGroupBox.setTitle(
+            QCoreApplication.translate("MainWindow", "Centrality Grouping Configuration", None))
         self.lblCentralityType.setText(QCoreApplication.translate("MainWindow", "Type", None))
         self.lblCentralityShowBy.setText(QCoreApplication.translate("MainWindow", "Show by", None))
         self.lblCentralityGradient.setText(QCoreApplication.translate("MainWindow", "Gradient", None))
         self.graphConfigurationGroupBox.setTitle(QCoreApplication.translate("MainWindow", "Graph Configuration", None))
         self.lblGraphConfiguration.setText(QCoreApplication.translate("MainWindow", "Layout", None))
         self.lblGraphHideOrphans.setText(QCoreApplication.translate("MainWindow", "Hide Orphans", None))
-        self.settingTabWidget.setTabText(self.settingTabWidget.indexOf(self.tabSettingAdvanced), QCoreApplication.translate("MainWindow", "Advanced", None))
+        self.settingTabWidget.setTabText(self.settingTabWidget.indexOf(self.tabSettingAdvanced),
+                                         QCoreApplication.translate("MainWindow", "Advanced", None))
         self.buttonApplyStyle.setText(QCoreApplication.translate("MainWindow", "Apply", None))
         self.lblRelation.setText(QCoreApplication.translate("MainWindow", "Relations", None))
         self.edgeSuspected.setText("")
@@ -558,4 +565,3 @@ class Ui_MainWindow(object):
         self.lineEditGraphFilter.setText("Filter")
         self.lineEditGraphFilter.setStyleSheet("color: grey;")
     # retranslateUi
-

@@ -1,8 +1,11 @@
+import uuid
+
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtGui import QPixmap, QPainter, QPen
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor
 from PyQt5.QtWidgets import QGraphicsPixmapItem, QApplication
 
+import constants
 from widgets.GraphEdgePoint import GraphEdgePoint
 
 
@@ -14,10 +17,21 @@ class GraphItem(QGraphicsPixmapItem):
     def __init__(self, parent, left=False, right=False):
         super().__init__(parent)
 
+        self.identifier = uuid.uuid4()
+
+        self.node_size = 30
+
+        self.node_shape = constants.NodeShapes.Circle
+
         self.show_icon = True
         self.use_image = False
 
         self._is_hovered = False
+
+        self.node_foreground_color = QColor(255, 0, 0)
+        self.node_background_color = QColor(255, 255, 0)
+        self.node_highlight_color = QColor(0, 0, 255)
+        self.node_label_text_color = QColor(0, 255, 0)
 
         self.startPosition = None
 
@@ -46,15 +60,64 @@ class GraphItem(QGraphicsPixmapItem):
         super().hoverLeaveEvent(event)
 
     def paint(self, painter, option, widget=None):
-        if not self.show_icon or self._is_hovered or self.isSelected():
+        if self._is_hovered:
             painter.save()
-            pen = QtGui.QPen(QtGui.QColor("red"))
+
+            # Looks better with this
+            painter.setRenderHint(QPainter.Antialiasing, True)
+
+            # Outline
+            pen = QtGui.QPen(QtGui.QColor("blue"))
+            pen.setWidth(3)
+            painter.setPen(pen)
+
+            new_rect = QRect(0, 0, self.node_size, self.node_size)
+
+            ## Shape
+            # Square
+            #painter.drawRect(self.boundingRect())
+            # Circle
+            painter.drawEllipse(new_rect)
+
+            painter.restore()
+        elif not self.show_icon:
+            painter.save()
+
+            # Looks better with this
+            painter.setRenderHint(QPainter.Antialiasing, True)
+
+            ## Colors
+            # Fill
+            brush = QtGui.QBrush(self.node_foreground_color)
+            painter.setBrush(brush)
+            # Outline
+            pen = QtGui.QPen(QtGui.QColor("black"))
             pen.setWidth(2)
             painter.setPen(pen)
-            painter.drawRect(self.boundingRect())
-            painter.restore()
+
+            new_rect = QRect(0, 0, self.node_size, self.node_size)
+
+            ## Shape
+            if self.node_shape == constants.NodeShapes.Circle:
+                painter.drawEllipse(new_rect)
+            elif self.node_shape == constants.NodeShapes.Square:
+                painter.drawRect(new_rect)
+            else:
+                painter.drawEllipse(self.boundingRect())
         else:
             super().paint(painter, option, widget)
+
+    def _get_identifier(self):
+        return self.identifier
+
+    def _set_identifier(self, _identifier):
+        self.identifier = _identifier
+
+    def _get_shape(self):
+        return self.node_shape
+
+    def _set_shape(self, _shape):
+        self.node_shape = _shape
 
     def _get_use_image(self):
         return self.use_image

@@ -1,15 +1,13 @@
 import io
 import os
 
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui
 
-import widgets.GraphItem
 from managers import js_manager
 from PIL import Image
 from PyQt5.QtCore import Qt, QBuffer, QByteArray, QPoint
 from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsPixmapItem, \
-    QGraphicsItem
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem
 
 from widgets.GraphEdge import GraphEdge
 from widgets.GraphEdgePoint import GraphEdgePoint
@@ -130,7 +128,7 @@ class GraphScene(QGraphicsScene):
     startItem = newConnection = None
     def controlPointAt(self, pos):
         mask = QtGui.QPainterPath()
-        mask.setFillRule(QtCore.Qt.WindingFill)
+        mask.setFillRule(Qt.WindingFill)
         for item in self.items(pos):
             if mask.contains(pos):
                 # ignore objects hidden by others
@@ -141,7 +139,7 @@ class GraphScene(QGraphicsScene):
                 mask.addPath(item.shape().translated(item.scenePos()))
 
     def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             item = self.controlPointAt(event.scenePos())
             if item:
                 self.startItem = item

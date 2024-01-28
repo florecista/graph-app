@@ -3,11 +3,12 @@ import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTranslator, QDir, QPoint, QMimeData, QRect, Qt
-from PyQt5.QtGui import QDrag, QPixmap
+from PyQt5.QtGui import QDrag, QPixmap, QColor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog, QLabel, \
-    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton, QGraphicsPixmapItem
+    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton, QGraphicsPixmapItem, QColorDialog
 
 import constants
+from delegates.NodePropertyDelegate import NodePropertyDelegate
 from managers import js_manager
 from models.EdgePropertyModel import EdgePropertyModel
 from models.NodePropertyModel import NodePropertyModel
@@ -65,6 +66,14 @@ class GraphTab(QMainWindow):
         self._read_json()
         self.__init_gui()
         self.__init_property_view()
+
+        self.ui.graphView.nodes_selection_changed.connect(self.__node_selection_changed)
+
+    def __node_selection_changed(self, node):
+        self.tableView.setModel(self.node_property_model)
+        self.tableView.setItemDelegate(NodePropertyDelegate(self.tableView))
+        self.node_property_model.reset(node)
+        self.remove_button.setEnabled(len(node) > 0)
 
     def mousePressEvent(self, event):
         if event.type() == Qt.MouseButton.LeftButton:
@@ -182,10 +191,10 @@ class GraphTab(QMainWindow):
 
         populate_listwidget_enum(self.ui.cboStyleNodeShape, constants.NodeShapes)
         # self.ui.cboStyleNodeShape.activated.connect(self.__gui_style_node_shape_changed)
-        #
-        # self.ui.buttonStyleNodeShapeForegroundColor.clicked.connect(
-        #     self.__gui_node_foreground_color
-        # )
+
+        self.ui.buttonStyleNodeShapeForegroundColor.clicked.connect(
+            self.__gui_node_foreground_color
+        )
         # self.ui.buttonStyleNodeShapeBackgroundColor.clicked.connect(
         #     self.__gui_node_background_color
         # )
@@ -242,6 +251,14 @@ class GraphTab(QMainWindow):
         #     self.graphLayoutSubGraphClicked
         # )
 
+    def __gui_node_foreground_color(self):
+        self.ui.graphView.node_foreground_color = QColorDialog.getColor()
+        # if color.isValid():
+        #     graphm.G.graph["node_foreground_color"] = color.name()
+        #     self.ui.buttonStyleNodeShapeForegroundColor.setStyleSheet(
+        #         "QPushButton { background-color: " + color.name() + "; }"
+        #     )
+
     def __init_property_view(self):
         self.tableView = QTableView(self.ui.dockWidgetContents_2)
         self.tableView.setEditTriggers(QAbstractItemView.DoubleClicked)
@@ -296,7 +313,7 @@ class GraphTab(QMainWindow):
         #    self.graph_layout_has_changed = False
         #else:
         #self.ui.graphScene.apply_settings()
-        self.ui.graphView.apply_settings()
+        self.ui.graphView.apply_settings(self)
 
 class MainWindow(QMainWindow):
     def __init__(self, parent: QWidget | None = None) -> None:

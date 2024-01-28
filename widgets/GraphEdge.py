@@ -2,12 +2,24 @@ from PyQt5 import QtWidgets, QtCore
 
 
 class GraphEdge(QtWidgets.QGraphicsLineItem):
-    def __init__(self, start, p2):
+    def __init__(self, source, target):
         super().__init__()
-        self.start = start
+        self.start = source
         self.end = None
-        self._line = QtCore.QLineF(start.scenePos(), p2)
+        self._line = QtCore.QLineF(source.scenePos(), target)
         self.setLine(self._line)
+
+    def _get_source(self):
+        return self.source
+
+    def _set_source(self, _source):
+        self.source = _source
+
+    def _get_target(self):
+        return self.target
+
+    def _set_target(self, _target):
+        self.target = _target
 
     def controlPoints(self):
         return self.start, self.end
