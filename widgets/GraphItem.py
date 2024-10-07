@@ -1,13 +1,12 @@
 import uuid
-
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor
 from PyQt5.QtWidgets import QGraphicsPixmapItem, QApplication
+from PySide6.QtCore import QPointF
 
 import constants
 from widgets.GraphEdgePoint import GraphEdgePoint
-
 
 class GraphItem(QGraphicsPixmapItem):
     pen = QtGui.QPen(Qt.red, 2)
@@ -18,14 +17,10 @@ class GraphItem(QGraphicsPixmapItem):
         super().__init__(parent)
 
         self.identifier = uuid.uuid4()
-
         self.node_size = 30
-
         self.node_shape = constants.NodeShapes.Circle
-
         self.show_icon = True
         self.use_image = False
-
         self._is_hovered = False
 
         self.node_foreground_color = QColor(255, 0, 0)
@@ -34,21 +29,21 @@ class GraphItem(QGraphicsPixmapItem):
         self.node_label_text_color = QColor(0, 255, 0)
 
         self.startPosition = None
-
         self.controls = []
+
+        self.parent = None  # Parent reference
+        self.children = []  # List to hold child nodes
 
         for onLeft, create in enumerate((right, left)):
             if create:
                 control = GraphEdgePoint(self, onLeft)
                 self.controls.append(control)
-                control.setPen(self.pen)
-                control.setBrush(self.controlBrush)
+                control.setPen(QtGui.QPen(Qt.black, 2))
+                control.setBrush(QtGui.QBrush(Qt.black))
                 if onLeft:
                     control.setX(50)
                 control.setY(20)
 
-    ## Adding hover
-    ## Reference - https://stackoverflow.com/questions/56266185/painting-qgraphicspixmapitem-border-on-hover
     def hoverEnterEvent(self, event):
         self._is_hovered = True
         self.update()
@@ -62,42 +57,22 @@ class GraphItem(QGraphicsPixmapItem):
     def paint(self, painter, option, widget=None):
         if self._is_hovered:
             painter.save()
-
-            # Looks better with this
             painter.setRenderHint(QPainter.Antialiasing, True)
-
-            # Outline
             pen = QtGui.QPen(QtGui.QColor("blue"))
             pen.setWidth(3)
             painter.setPen(pen)
-
             new_rect = QRect(0, 0, self.node_size, self.node_size)
-
-            ## Shape
-            # Square
-            #painter.drawRect(self.boundingRect())
-            # Circle
             painter.drawEllipse(new_rect)
-
             painter.restore()
         elif not self.show_icon:
             painter.save()
-
-            # Looks better with this
             painter.setRenderHint(QPainter.Antialiasing, True)
-
-            ## Colors
-            # Fill
             brush = QtGui.QBrush(self.node_foreground_color)
             painter.setBrush(brush)
-            # Outline
             pen = QtGui.QPen(self.node_background_color)
             pen.setWidth(2)
             painter.setPen(pen)
-
             new_rect = QRect(0, 0, self.node_size, self.node_size)
-
-            ## Shape
             if self.node_shape == constants.NodeShapes.Circle:
                 painter.drawEllipse(new_rect)
             elif self.node_shape == constants.NodeShapes.Square:
@@ -107,6 +82,7 @@ class GraphItem(QGraphicsPixmapItem):
         else:
             super().paint(painter, option, widget)
 
+    # Identifier methods
     def _get_identifier(self):
         return self.identifier
 
@@ -149,27 +125,34 @@ class GraphItem(QGraphicsPixmapItem):
     def _set_pixmap(self, _pixmap):
         self.pixmap = _pixmap
 
+    # Parent-child relationship methods
+    def has_parent(self):
+        """Check if the node has a parent."""
+        return self.parent is not None
+
+    def add_child(self, child):
+        """Add a child node and set the parent reference."""
+        child.parent = self  # Set the parent of the child
+        self.children.append(child)
+
+    def get_children(self):
+        """Return the list of child nodes."""
+        return self.children
+
     # Reference - https://stackoverflow.com/questions/72535825/pyqt5-qgraphicsscene-mouse-item-with-click-and-drop-without-holding-press
     moving = False
+
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
         if event.type() == Qt.MouseButton.LeftButton:
-            # by defaults, mouse press events are not accepted/handled,
-            # meaning that no further mouseMoveEvent or mouseReleaseEvent
-            # will *ever* be received by this item; with the following,
-            # those events will be properly dispatched
             event.accept()
             self.startPosition = event.screenPos()
             self.setPos(self.startPosition)
 
     def mouseMoveEvent(self, event):
         if self.moving:
-            # map the position to the parent in order to ensure that the
-            # transformations are properly considered:
-            currentParentPos = self.mapToParent(
-                self.mapFromScene(event.scenePos()))
-            originParentPos = self.mapToParent(
-                self.mapFromScene(event.buttonDownScenePos(Qt.LeftButton)))
+            currentParentPos = self.mapToParent(self.mapFromScene(event.scenePos()))
+            originParentPos = self.mapToParent(self.mapFromScene(event.buttonDownScenePos(Qt.LeftButton)))
             self.setPos(self.startPosition + currentParentPos - originParentPos)
         else:
             super().mouseMoveEvent(event)
@@ -179,23 +162,12 @@ class GraphItem(QGraphicsPixmapItem):
         if event.type() == Qt.MouseButton.LeftButton or event.pos() not in self.boundingRect():
             return
 
-        # the following code block is to allow compatibility with the
-        # ItemIsMovable flag: if the item has the flag set and was moved while
-        # keeping the left mouse button pressed, we proceed with our
-        # no-mouse-button-moved approach only *if* the difference between the
-        # pressed and released mouse positions is smaller than the application
-        # default value for drag movements; in this way, small, involuntary
-        # movements usually created between pressing and releasing the mouse
-        # button will still be considered as candidates for our implementation;
-        # if you are *not* interested in this flag, just ignore this code block
         distance = (event.screenPos() - self.pos()).manhattanLength()
         startDragDistance = QApplication.startDragDistance()
         if not self.moving and distance > startDragDistance:
             return
-        # end of ItemIsMovable support
 
         self.moving = not self.moving
-        # the following is *mandatory*
         self.setAcceptHoverEvents(self.moving)
         if self.moving:
             self.startPosition = self.pos()

@@ -2,7 +2,7 @@ from PyQt5.QtCore import pyqtSignal, QRect, QPoint, QSize, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand
 
-from constants import NodeShapes
+from constants import NodeShapes, GraphLayout
 from graph.LayoutFactory import LayoutFactory
 from widgets.GraphEdge import GraphEdge
 from widgets.GraphItem import GraphItem
@@ -102,11 +102,15 @@ class GraphView(QGraphicsView):
                 edges.append(child)
                 edge_index = edge_index + 1
 
-        # attempt at making graph layout algorithms
-        if len(nodes) > 0:
+        # Get the selected layout object directly from the ComboBox
+        layout_object = parent_window.ui.cboGraphConfiguration.currentData()
+
+        if layout_object and len(nodes) > 0:
             layout_factory = LayoutFactory()
-            layout_name = "force_directed_layout"
-            layout = layout_factory.create_layout(layout_name, nodes, edges, self.height(), self.width())
+            layout = layout_factory.create_layout(layout_object, nodes, edges, self.height(), self.width())
+            layout.layout()
+            for node in nodes:
+                print("After:", node.pos())
 
         count = 0
         for child in self.items():
