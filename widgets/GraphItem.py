@@ -1,12 +1,11 @@
 import uuid
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor
-from PyQt5.QtWidgets import QGraphicsPixmapItem, QApplication
-from PySide6.QtCore import QPointF
+from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtWidgets import QGraphicsPixmapItem, QGraphicsItem
 
 import constants
-from widgets.GraphEdgePoint import GraphEdgePoint
+
 
 class GraphItem(QGraphicsPixmapItem):
     pen = QtGui.QPen(Qt.red, 2)
@@ -29,20 +28,13 @@ class GraphItem(QGraphicsPixmapItem):
         self.node_label_text_color = QColor(0, 255, 0)
 
         self.startPosition = None
-        self.controls = []
+        self.lines = []
+        self.edges = []  # Initialize the edges list
 
         self.parent = None  # Parent reference
         self.children = []  # List to hold child nodes
 
-        for onLeft, create in enumerate((right, left)):
-            if create:
-                control = GraphEdgePoint(self, onLeft)
-                self.controls.append(control)
-                control.setPen(QtGui.QPen(Qt.black, 2))
-                control.setBrush(QtGui.QBrush(Qt.black))
-                if onLeft:
-                    control.setX(50)
-                control.setY(20)
+        self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsGeometryChanges)
 
     def hoverEnterEvent(self, event):
         self._is_hovered = True
@@ -125,6 +117,29 @@ class GraphItem(QGraphicsPixmapItem):
     def _set_pixmap(self, _pixmap):
         self.pixmap = _pixmap
 
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionChange:
+            for line in self.lines:  # Assuming the node has a list of connected lines
+                line.updateLine()  # Just call updateLine without passing the node
+        return super().itemChange(change, value)
+
+    def addLine(self, lineItem):
+        for existing in self.lines:
+            if existing.controlPoints() == lineItem.controlPoints():
+                # another line with the same control points already exists
+                return False
+        self.lines.append(lineItem)
+        return True
+
+    def removeLine(self, lineItem):
+        for existing in self.lines:
+            if existing.controlPoints() == lineItem.controlPoints():
+                self.scene().removeItem(existing)
+                self.lines.remove(existing)
+                return True
+        return False
+
+
     # Parent-child relationship methods
     def has_parent(self):
         """Check if the node has a parent."""
@@ -135,42 +150,11 @@ class GraphItem(QGraphicsPixmapItem):
         child.parent = self  # Set the parent of the child
         self.children.append(child)
 
+        # Debugging prints to verify relationship
+        print(f"Child {child.identifier} added to parent {self.identifier}")
+        print(f"Parent {self.identifier} now has children: {[c.identifier for c in self.children]}")
+        print(f"Child {child.identifier} parent set to {child.parent.identifier}")
+
     def get_children(self):
         """Return the list of child nodes."""
         return self.children
-
-    # Reference - https://stackoverflow.com/questions/72535825/pyqt5-qgraphicsscene-mouse-item-with-click-and-drop-without-holding-press
-    moving = False
-
-    def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        if event.type() == Qt.MouseButton.LeftButton:
-            event.accept()
-            self.startPosition = event.screenPos()
-            self.setPos(self.startPosition)
-
-    def mouseMoveEvent(self, event):
-        if self.moving:
-            currentParentPos = self.mapToParent(self.mapFromScene(event.scenePos()))
-            originParentPos = self.mapToParent(self.mapFromScene(event.buttonDownScenePos(Qt.LeftButton)))
-            self.setPos(self.startPosition + currentParentPos - originParentPos)
-        else:
-            super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
-        if event.type() == Qt.MouseButton.LeftButton or event.pos() not in self.boundingRect():
-            return
-
-        distance = (event.screenPos() - self.pos()).manhattanLength()
-        startDragDistance = QApplication.startDragDistance()
-        if not self.moving and distance > startDragDistance:
-            return
-
-        self.moving = not self.moving
-        self.setAcceptHoverEvents(self.moving)
-        if self.moving:
-            self.startPosition = self.pos()
-            self.grabMouse()
-        else:
-            self.ungrabMouse()

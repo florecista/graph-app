@@ -1,7 +1,5 @@
 import math
-
 from graph.GraphLayout import GraphLayout
-
 
 class CircularLayout(GraphLayout):
     def __init__(self, node_list, edge_list, height, width):
@@ -32,6 +30,10 @@ class CircularLayout(GraphLayout):
             x = center_x + radius * math.cos(angle)
             y = center_y + radius * math.sin(angle)
             node.setPos(x, y)  # Set node position
+
+            # After moving the node, update its edges
+            for edge in node.lines:
+                edge.updateLine()
 
     def layout(self):
         # No additional layout adjustments needed for circular layout

@@ -74,13 +74,12 @@ class GraphTab(QMainWindow):
         self.tableView.setItemDelegate(NodePropertyDelegate(self.tableView))
         self.node_property_model.reset(node)
         self.remove_button.setEnabled(len(node) > 0)
-
-    def mousePressEvent(self, event):
-        if event.type() == Qt.MouseButton.LeftButton:
-            self.dragStartPosition = event.pos()
+    #
+    # def mousePressEvent(self, event):
+    #     if event.type() == Qt.MouseButton.LeftButton:
+    #         self.dragStartPosition = event.pos()
 
     def mouseMoveEvent(self, event):
-
         if (
             event.pos() - self.dragStartPosition
         ).manhattanLength() < QApplication.startDragDistance():
@@ -103,8 +102,8 @@ class GraphTab(QMainWindow):
 
         drag.exec_()
 
-    def mouseReleaseEvent(self, event):
-        super(GraphTab, self).mouseReleaseEvent(event)
+    # def mouseReleaseEvent(self, event):
+    #     super(GraphTab, self).mouseReleaseEvent(event)
 
     def dragEnterEvent(self, event):
         event.setAccepted(True)

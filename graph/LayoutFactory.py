@@ -12,11 +12,11 @@ from graph.RadialTreeLayout import RadialTreeLayout
 
 class LayoutFactory:
     def create_layout(self, layout, nodes, edges, height, width):
-        if layout == constants.GraphLayout.Tree:
-            return HierarchicalTreeLayout(nodes)
+        if layout == constants.GraphLayout.HierarchicalTree:
+            return HierarchicalTreeLayout(nodes, width, height)
         elif layout == constants.GraphLayout.Circular:
             return CircularLayout(nodes, edges, height, width)
-        elif layout == constants.GraphLayout.Radial:
+        elif layout == constants.GraphLayout.RadialTree:
             return RadialTreeLayout(nodes, edges, height, width)
         elif layout == constants.GraphLayout.ForceDirected:
             return ForceDirectedLayout(nodes, edges, height, width)

@@ -5,8 +5,10 @@ from graph.GraphLayout import GraphLayout
 from widgets.GraphEdge import GraphEdge
 from widgets.GraphItem import GraphItem
 
+
 class ForceDirectedLayout(GraphLayout):
-    def __init__(self, node_list, edge_list, height, width, default_eject_factor=0.1, default_small_dist_eject_factor=0.05,
+    def __init__(self, node_list, edge_list, height, width, default_eject_factor=0.1,
+                 default_small_dist_eject_factor=0.05,
                  default_condense_factor=0.01, max_delta_x=10, max_delta_y=10):
         self.nodes = node_list
         self.edges = edge_list
@@ -33,8 +35,10 @@ class ForceDirectedLayout(GraphLayout):
             self.dx_map[node.identifier] = 0  # Initialize for each node
             self.dy_map[node.identifier] = 0  # Initialize for each node
 
-
     def layout(self):
+        print("Starting layout...")
+        for node in self.nodes:
+            print(f"Node {node.identifier} connected edges: {[edge for edge in node.lines]}")
         self.calculate_repulsive()
         self.calculate_traction()
         self.update_coordinates()
@@ -62,41 +66,54 @@ class ForceDirectedLayout(GraphLayout):
 
     def calculate_traction(self):
         for edge in self.edges:
-            source_identifier = GraphItem(edge._get_source()).identifier  # Change to _get_source
-            target_identifier = GraphItem(edge._get_target()).identifier  # Assuming you have _get_target
+            # Ensure that 'start' and 'end' attributes exist and are valid GraphItems
+            start_node = edge.start  # Directly access 'start' (no need to wrap in GraphItem)
+            end_node = edge.end  # Directly access 'end'
 
+            if start_node is None or end_node is None:
+                print(f"Warning: Edge {edge} is missing start or end node.")
+                continue
+
+            source_identifier = start_node.identifier
+            target_identifier = end_node.identifier
+
+            # Retrieve nodes from node_map using identifiers
             start_node = self.node_map.get(source_identifier)
             end_node = self.node_map.get(target_identifier)
 
+            # Check if nodes exist in the node_map
             if start_node is None:
-                print("Missing start node for edge", source_identifier)
+                print(f"Warning: Missing start node for edge with identifier {source_identifier}")
+                continue
             if end_node is None:
-                print("Missing destination node for edge", target_identifier)
+                print(f"Warning: Missing end node for edge with identifier {target_identifier}")
+                continue
 
+            # Proceed with traction calculations if both nodes are valid
             dist_x = start_node.pos().x() - end_node.pos().x()
             dist_y = start_node.pos().y() - end_node.pos().y()
-            dist = math.sqrt(dist_x * dist_x + dist_y * dist_y)
+            dist = math.sqrt(dist_x ** 2 + dist_y ** 2)
 
             if dist_x >= 150 and dist_y >= 350:
-                self.dx_map[source_identifier] -= dist_x * dist / self.k * self.default_condense_factor
-                self.dy_map[source_identifier] -= dist_y * dist / self.k * self.default_condense_factor
-                self.dx_map[target_identifier] -= dist_x * dist / self.k * self.default_condense_factor
-                self.dy_map[target_identifier] -= dist_y * dist / self.k * self.default_condense_factor
+                adjustment = dist / self.k * self.default_condense_factor
+                self.dx_map[source_identifier] -= dist_x * adjustment
+                self.dy_map[source_identifier] -= dist_y * adjustment
+                self.dx_map[target_identifier] += dist_x * adjustment
+                self.dy_map[target_identifier] += dist_y * adjustment
 
     def update_coordinates(self):
         for node in self.nodes:
-            identifier = GraphItem(node).identifier
-            print(f"Node Identifier: {identifier}")  # Debug print
+            identifier = node.identifier  # Already a GraphItem, so no need to wrap it again
 
-            # Check if the identifier exists in dx_map
-            if identifier not in self.dx_map:
-                print(f"Warning: Identifier {identifier} not found in dx_map")
-                continue  # Skip this node or handle as necessary
-
-            dx = math.floor(self.dx_map[identifier])
-            dy = math.floor(self.dy_map[identifier])
+            # Ensure dx and dy are properly calculated for the node
+            dx = math.floor(self.dx_map.get(identifier, 0))  # Use .get() to avoid KeyErrors
+            dy = math.floor(self.dy_map.get(identifier, 0))
 
             node.setPos(node.pos().x() + dx, node.pos().y() + dy)
+
+        # After updating node positions, ensure the edges are updated
+        for edge in self.edges:
+            edge.updateLine()
 
     def all_to_random_positions(self):
         for node in self.nodes:

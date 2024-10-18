@@ -12,9 +12,9 @@ class CentralityGradient(IntEnum):
 class GraphLayout(IntEnum):
     Select = 0
     Circular = 1
-    Radial = 2
-    Tree = 3
-    SubGraph = 4
+    RadialTree = 2
+    HierarchicalTree = 3
+    ForceDirected = 4
 
 class CentralityShowBy(IntEnum):
     Select = 0

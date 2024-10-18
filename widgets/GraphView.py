@@ -3,6 +3,7 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand
 
 from constants import NodeShapes, GraphLayout
+from graph.HierarchicalTreeLayout import HierarchicalTreeLayout
 from graph.LayoutFactory import LayoutFactory
 from widgets.GraphEdge import GraphEdge
 from widgets.GraphItem import GraphItem
@@ -38,18 +39,15 @@ class GraphView(QGraphicsView):
         graphEdgePointOffset = 50
 
         for child in self.items():
-
             if (isinstance(child, GraphItem)):
                 childRect = QRect(int(child.x()), int(child.y()), int(child.boundingRect().width())+graphEdgePointOffset,
                                   int(child.boundingRect().height()))
                 positionOffset = QPoint(self.origin.x()-32, self.origin.y())
                 if childRect.contains(positionOffset):
                     is_touching_icon = True
-                    self.nodes_selection_changed.emit({}
-                        #graphm.cur_G.nodes[self.selected_node_names[0]]
-                    )
-            else:
-                self.nodes_selection_changed.emit({})
+                # for line in child.lines:
+                #     line.updateLine(child)
+            self.nodes_selection_changed.emit({})
 
         if not is_touching_icon:
             self.rubberBand.setGeometry(QRect(self.origin, QSize()))
@@ -84,7 +82,6 @@ class GraphView(QGraphicsView):
         QGraphicsView.mouseReleaseEvent(self,event)
 
     def apply_settings(self, parent_window):
-        print('apply_settings')
 
         nodes = []
         node_index = 1
@@ -108,7 +105,14 @@ class GraphView(QGraphicsView):
         if layout_object and len(nodes) > 0:
             layout_factory = LayoutFactory()
             layout = layout_factory.create_layout(layout_object, nodes, edges, self.height(), self.width())
-            layout.layout()
+
+            # Check for HierarchicalTreeLayout and pass the root_node
+            if isinstance(layout, HierarchicalTreeLayout):
+                root_node = self.find_root_node(nodes)
+                layout.layout(root_node)
+            else:
+                layout.layout()
+
             for node in nodes:
                 print("After:", node.pos())
 
@@ -145,3 +149,9 @@ class GraphView(QGraphicsView):
     def updateCenter(self):
         center = self.geometry().center()
         self._center = self.mapToScene(center)
+
+    def find_root_node(self, nodes):
+        for node in nodes:
+            if not node.has_parent():  # Assuming a method to check for the parent
+                return node
+        return None  # Or raise an exception if there's no root

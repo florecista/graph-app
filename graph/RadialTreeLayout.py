@@ -11,11 +11,7 @@ class RadialTreeLayout:
         self.width = width
 
     def get_node_depth(self, node):
-        """Calculate the depth of a node in the graph.
-
-        This implementation assumes you have a way to get the parent of a node
-        and that a node with no parent (the root) has a depth of 0.
-        """
+        """Calculate the depth of a node in the graph."""
         depth = 0
         current_node = node
 
@@ -45,4 +41,8 @@ class RadialTreeLayout:
                 angle = angle_increment * index
                 x = center_x + radius * math.cos(math.radians(angle))
                 y = center_y + radius * math.sin(math.radians(angle))
-                node.setPos(float(x), float(y))
+                node.setPos(float(x), float(y))  # Set node position
+
+                # After moving the node, update its edges
+                for edge in node.lines:  # Assuming you have a 'lines' attribute for edges
+                    edge.updateLine()  # Update the edge's position

@@ -5,12 +5,11 @@ from PyQt5 import QtGui
 
 from managers import js_manager
 from PIL import Image
-from PyQt5.QtCore import Qt, QBuffer, QByteArray, QPoint
+from PyQt5.QtCore import Qt, QBuffer, QByteArray, QPoint, QPointF
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem
 
 from widgets.GraphEdge import GraphEdge
-from widgets.GraphEdgePoint import GraphEdgePoint
 from widgets.GraphItem import GraphItem
 
 
@@ -49,8 +48,6 @@ class GraphScene(QGraphicsScene):
         graphItem.label = attributes["Type"]
         graphItem.attributes = attributes
         graphItem.setPos(position)
-        graphItem.setFlag(QGraphicsPixmapItem.ItemIsSelectable)
-        graphItem.setFlags(QGraphicsPixmapItem.ItemIsMovable)
         graphItem.setAcceptHoverEvents(True)
 
         fullscreen_canvas_width = self.parent().width()
@@ -98,7 +95,6 @@ class GraphScene(QGraphicsScene):
             event.ignore()
 
     def dropEvent(self, event):
-        print('GraphScene.dropEvent')
         pos = event.pos()
         mimeData = event.mimeData()
         pixMap = QPixmap(mimeData)
@@ -115,11 +111,9 @@ class GraphScene(QGraphicsScene):
         event.acceptProposedAction()
 
     def dragLeaveEvent(self, event):
-        print('GraphScene.dragLeaveEvent')
         event.acceptProposedAction()
 
     def dragMoveEvent(self, event):
-        print('GraphScene.dragMoveEvent')
         if event.mimeData().hasImage():
             event.accept()
         else:
@@ -133,46 +127,56 @@ class GraphScene(QGraphicsScene):
             if mask.contains(pos):
                 # ignore objects hidden by others
                 return
-            if isinstance(item, GraphEdgePoint):
+            if isinstance(item, GraphItem):
                 return item
             if not isinstance(item, GraphEdge):
                 mask.addPath(item.shape().translated(item.scenePos()))
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton and event.modifiers() & Qt.ShiftModifier:
             item = self.controlPointAt(event.scenePos())
             if item:
                 self.startItem = item
-                self.newConnection = GraphEdge(item, event.scenePos())
+                centerPos = self.getCenterPos(item)  # Set the starting position to the center
+                self.newConnection = GraphEdge(item, centerPos)
                 self.addItem(self.newConnection)
-                return
+
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if self.newConnection:
             item = self.controlPointAt(event.scenePos())
-            if (item and item != self.startItem and
-                self.startItem.onLeft != item.onLeft):
-                    p2 = item.scenePos()
+            if item and item != self.startItem:
+                p2 = self.getCenterPos(item)  # Get the center position of the connected item
             else:
-                p2 = event.scenePos()
+                p2 = event.scenePos()  # If no item is at the mouse position, use the current mouse position
             self.newConnection.setP2(p2)
             return
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
+        item = self.controlPointAt(event.scenePos())
         if self.newConnection:
-            item = self.controlPointAt(event.scenePos())
             if item and item != self.startItem:
                 self.newConnection.setEnd(item)
+
+                # If the connection is successful
                 if self.startItem.addLine(self.newConnection):
                     item.addLine(self.newConnection)
+
+                    # Add parent-child relationship here
+                    if not item.has_parent():
+                        self.startItem.add_child(item)  # Establish parent-child relationship
                 else:
-                    # delete the connection if it exists; remove the following
-                    # line if this feature is not required
                     self.startItem.removeLine(self.newConnection)
                     self.removeItem(self.newConnection)
             else:
                 self.removeItem(self.newConnection)
+
         self.startItem = self.newConnection = None
         super().mouseReleaseEvent(event)
+
+    def getCenterPos(self, item):
+        """Helper method to get the center of the item"""
+        rect = item.boundingRect()
+        return item.scenePos() + QPointF(rect.width() / 2, rect.height() / 2)
