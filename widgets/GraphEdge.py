@@ -1,16 +1,23 @@
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import QLineF, QPointF
 from PyQt5.QtWidgets import QGraphicsItem
 
 
 from PyQt5 import QtWidgets, QtCore
 
 class GraphEdge(QtWidgets.QGraphicsLineItem):
-    def __init__(self, source, target):
-        super().__init__()
-        self.start = source  # Using 'start' instead of 'source'
-        self.end = None  # Using 'end' instead of 'target'
+    def __init__(self, source, target, parent=None):
+        super().__init__(parent)
+
+        self.start = source
+        self.end = target
+
+        # Get the center positions of source and target GraphItems
         sourceCenter = self.getCenterPos(self.start)
-        self._line = QtCore.QLineF(sourceCenter, target)
+        targetCenter = self.getCenterPos(self.end)
+
+        # Create a line between the two center positions
+        self._line = QLineF(sourceCenter, targetCenter)
         self.setLine(self._line)
 
     def setStart(self, start):
@@ -36,8 +43,11 @@ class GraphEdge(QtWidgets.QGraphicsLineItem):
         self.setLine(self._line)
 
     def getCenterPos(self, item):
-        rect = item.boundingRect()
-        return item.scenePos() + QtCore.QPointF(rect.width() / 2, rect.height() / 2)
+        """Helper method to get the center position of a GraphItem."""
+        rect = item.boundingRect()  # Get the bounding rectangle of the item
+        center_x = item.pos().x() + rect.width() / 2  # X-coordinate of the center
+        center_y = item.pos().y() + rect.height() / 2  # Y-coordinate of the center
+        return QPointF(center_x, center_y)
 
     def _get_source(self):
         return self.source

@@ -129,7 +129,10 @@ class JSONManager(QObject):
     def groups(self) -> [str]:
         return list(self.data.keys())
 
-    def types(self, node_group: str) -> [str]:
+    def types(self, node_group):
+        if node_group not in self.data:
+            print(f"Error: Group '{node_group}' not found in data")
+            return []  # Return an empty list or handle the error as needed
         return [item['label'] for item in self.data[node_group]]
 
     def attribute_names(self, node_group: str, node_type: str) -> [str]:
@@ -174,6 +177,8 @@ class JSONManager(QObject):
         #for key in list(node.keys()):
         #    if key not in node_attributes:
         #        del node[key]
+
+        #print(f"Updating node with data: {node}")
 
         if 'Group' not in node.keys() or node['Group'] not in self.groups():
             node['Group'] = 'object'

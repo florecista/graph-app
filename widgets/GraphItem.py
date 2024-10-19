@@ -12,7 +12,7 @@ class GraphItem(QGraphicsPixmapItem):
     brush = QtGui.QBrush(QtGui.QColor(31, 176, 224))
     controlBrush = QtGui.QBrush(QtGui.QColor(214, 13, 36))
 
-    def __init__(self, parent, left=False, right=False):
+    def __init__(self, parent):
         super().__init__(parent)
 
         self.identifier = uuid.uuid4()

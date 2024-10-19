@@ -44,7 +44,7 @@ class GraphScene(QGraphicsScene):
         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
 
         # build graph item
-        graphItem = GraphItem(pixmap, left=True)
+        graphItem = GraphItem(pixmap)
         graphItem.label = attributes["Type"]
         graphItem.attributes = attributes
         graphItem.setPos(position)

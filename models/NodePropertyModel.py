@@ -6,7 +6,7 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QByteArray, QBuff
 from PyQt5.QtGui import QImage, QPixmap, QIcon
 
 from managers import js_manager
-from utils import signal_throttle
+from utils.utils import signal_throttle
 
 class NodePropertyModel(QAbstractTableModel):
     def __init__(self, parent=None):

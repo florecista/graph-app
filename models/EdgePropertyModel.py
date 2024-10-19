@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 
-from managers import graphm, js_manager
-from utils import signal_throttle
+from managers import graphm
+from utils.utils import signal_throttle
 
 class EdgePropertyModel(QAbstractTableModel):
     def __init__(self, parent=None):

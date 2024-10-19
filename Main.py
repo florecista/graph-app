@@ -1,11 +1,9 @@
-import os
 import sys
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import QTranslator, QDir, QPoint, QMimeData, QRect, Qt
-from PyQt5.QtGui import QDrag, QPixmap, QColor
+from PyQt5.QtCore import QTranslator, QDir, QPoint, QMimeData, QRect, QFileInfo
+from PyQt5.QtGui import QDrag
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMenuBar, QActionGroup, QDialog, QLabel, \
-    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton, QGraphicsPixmapItem, QColorDialog
+    QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton, QColorDialog, QFileDialog
 
 import constants
 from delegates.NodePropertyDelegate import NodePropertyDelegate
@@ -14,7 +12,8 @@ from models.EdgePropertyModel import EdgePropertyModel
 from models.NodePropertyModel import NodePropertyModel
 from ui.Ui_DlgEdge import Ui_DlgEdge
 from ui.Ui_MainWindow import Ui_MainWindow
-from utils import populate_listwidget_enum
+from utils import file_utils
+from utils.utils import populate_listwidget_enum
 
 
 class EdgeDialog(QDialog):
@@ -68,6 +67,10 @@ class GraphTab(QMainWindow):
         self.__init_property_view()
 
         self.ui.graphView.nodes_selection_changed.connect(self.__node_selection_changed)
+
+        self.import_path = ""
+
+        self.graph_layout_has_changed = False
 
     def __node_selection_changed(self, node):
         self.tableView.setModel(self.node_property_model)
@@ -303,6 +306,23 @@ class GraphTab(QMainWindow):
         self.__deselected()
         self.apply_settings()
 
+
+    def open_graph(self) -> None:
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Open", self.import_path, "GraphML (*.graphml)"
+        )
+        if file_name:
+            self.import_path = str(QFileInfo(file_name).absolutePath())
+            self.ui.statusbar.showMessage("Importing data...")
+            self.ui.statusbar.repaint()
+            self.ui.graphView.open_graphml(self.ui.graphScene, file_name)
+            #self.ui.graphView.viewport().update()  # Ensure the view is refreshed
+            #self.ui.graphView.update()
+
+            self.apply_settings()
+            self.ui.statusbar.clearMessage()
+
+
     def apply_settings(self):
         self.ui.graphScene.style_updated = True
         #if self.graph_layout_has_changed:
@@ -351,7 +371,7 @@ class MainWindow(QMainWindow):
         # action.triggered.connect(self.graph_view.clear_graph)
         action = self.menu_file_items.addAction("")
         action.setText(self.tr("&Open..."))
-        # action.triggered.connect(self.graph_view.open_graph)
+        action.triggered.connect(self.graph_view.open_graph)
         action = self.menu_file_items.addAction("&Import...")
         action.setText(self.tr("&Import..."))
         action.setDisabled(True)
@@ -429,6 +449,7 @@ class MainWindow(QMainWindow):
     #     ShowLicenseWindow = Ui_Registration()
     #     ShowLicenseWindow.aboutLicense(self.license_file)
     #     ShowLicenseWindow.exec_()
+
 
 
 app = QApplication([])

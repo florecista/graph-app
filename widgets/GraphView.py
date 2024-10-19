@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QGraphicsView, QRubberBand
 from constants import NodeShapes, GraphLayout
 from graph.HierarchicalTreeLayout import HierarchicalTreeLayout
 from graph.LayoutFactory import LayoutFactory
+from utils import file_utils
 from widgets.GraphEdge import GraphEdge
 from widgets.GraphItem import GraphItem
 
@@ -155,3 +156,14 @@ class GraphView(QGraphicsView):
             if not node.has_parent():  # Assuming a method to check for the parent
                 return node
         return None  # Or raise an exception if there's no root
+
+    def open_graphml(self, scene, filename):
+        # Ensure the scene is correctly passed
+        if scene is None:
+            print("Error: Scene is not initialized!")
+        else:
+            print(f"Scene: {scene}")
+
+        # Proceed to load the GraphML data
+        file_utils.load_graphml_to_scene(scene, filename)
+
