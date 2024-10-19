@@ -15,6 +15,7 @@ class GraphLayout(IntEnum):
     RadialTree = 2
     HierarchicalTree = 3
     ForceDirected = 4
+    FruchtermanReingold = 5
 
 class CentralityShowBy(IntEnum):
     Select = 0
