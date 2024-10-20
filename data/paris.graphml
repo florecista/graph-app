@@ -7,7 +7,8 @@
 <key id="d2" for="node" attr.name="Attributes" attr.type="string"/>
 <key id="d1" for="node" attr.name="Type" attr.type="string"/>
 <key id="d0" for="node" attr.name="Group" attr.type="string"/>
-<graph edgedefault="undirected"><node id="Point 0">
+<graph edgedefault="undirected">
+  <node id="Point 0">
   <data key="d0">people</data>
   <data key="d1">Male</data>
   <data key="d2">{'description': 'Salah', 'name': 'First Name', 'type': 'string'};{'description': 'Abdeslam', 'name': 'Last Name', 'type': 'string'};{'description': '', 'name': 'Country of Birth', 'type': 'string'};{'description': '09/14/1989', 'name': 'Date of Birth', 'type': 'date'};{'description': 'French', 'name': 'Citizenship', 'type': 'string'}</data>

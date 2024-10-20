@@ -1,8 +1,11 @@
+import base64
+import ast
+
 import networkx as nx
 from managers.json import js_manager
 from widgets.GraphItem import GraphItem
 from widgets.GraphEdge import GraphEdge
-from PyQt5.QtCore import QPointF, Qt
+from PyQt5.QtCore import QPointF, Qt, QByteArray
 import ast
 
 
@@ -17,6 +20,18 @@ def load_graphml_to_scene(graph_scene, file_path):
 
     # Step 2: Iterate over the nodes in the GraphML file
     for node_id, node_data in graph.nodes(data=True):
+        label = node_data.get("Label", "")
+
+        image_data = node_data.get("Image", {})
+        # this was handy - https://bobbyhadz.com/blog/python-jsondecodeerror-expecting-property-name-enclosed-in-double-quotes
+        image_data_dict = ast.literal_eval(image_data)
+        image_base64 = image_data_dict['image']
+        # do we need the following two
+        image_name = image_data_dict['name']
+        image_pixmap = load_base64_image(image_base64)
+
+        image_scale = node_data.get("Image Scale", False)  # Boolean flag for image scaling
+
         # Extract Group and Type attributes to fetch the icon
         group = node_data.get("Group", "")
         node_type = node_data.get("Type", "")
@@ -34,7 +49,13 @@ def load_graphml_to_scene(graph_scene, file_path):
         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
 
         # Create a new GraphItem using the pixmap
-        graph_item = GraphItem(pixmap)
+        graph_item = GraphItem(
+            pixmap,
+            label=label,
+            attributes=node_data,
+            image=image_base64,
+            image_scale=image_scale
+        )
 
         # Set the identifier for the GraphItem based on GraphML node ID
         graph_item.identifier = node_id
@@ -72,3 +93,20 @@ def load_graphml_to_scene(graph_scene, file_path):
         end_item.addLine(graph_edge)
 
     print("GraphML data successfully loaded into the scene.")
+
+def load_base64_image(image_data):
+    try:
+        # Decode the base64 string into bytes
+        image_bytes = base64.b64decode(image_data)
+        byte_array = QByteArray(image_bytes)
+        pixmap = QPixmap()
+
+        # Load the pixmap from the byte array
+        if pixmap.loadFromData(byte_array):
+            return pixmap
+        else:
+            print("Error: Could not load pixmap from base64 data")
+            return None
+    except Exception as e:
+        print(f"Error decoding image: {e}")
+        return None

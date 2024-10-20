@@ -114,8 +114,8 @@ class GraphView(QGraphicsView):
             else:
                 layout.layout()
 
-            for node in nodes:
-                print("After:", node.pos())
+            # for node in nodes:
+            #     print("After:", node.pos())
 
         count = 0
         for child in self.items():
@@ -132,15 +132,13 @@ class GraphView(QGraphicsView):
                 node_shape = NodeShapes(parent_window.ui.cboStyleNodeShape.currentData())
                 child.node_shape = node_shape
 
-                print(child.identifier)
+                # print(child.identifier)
                 if child.isSelected():
                     print(child.identifier, 'selected')
                 count = count + 1
 
         ## Reference - https://stackoverflow.com/questions/12439082/qgraphicssceneclear-clearing-scene-but-not-the-view
         self.viewport().update()
-
-        print('changed ', str(count))
 
     def resizeEvent(self, event):
         super(GraphView, self).resizeEvent(event)

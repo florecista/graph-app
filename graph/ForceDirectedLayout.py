@@ -36,9 +36,9 @@ class ForceDirectedLayout(GraphLayout):
             self.dy_map[node.identifier] = 0  # Initialize for each node
 
     def layout(self):
-        print("Starting layout...")
-        for node in self.nodes:
-            print(f"Node {node.identifier} connected edges: {[edge for edge in node.lines]}")
+        # print("Starting layout...")
+        # for node in self.nodes:
+        #     print(f"Node {node.identifier} connected edges: {[edge for edge in node.lines]}")
         self.calculate_repulsive()
         self.calculate_traction()
         self.update_coordinates()

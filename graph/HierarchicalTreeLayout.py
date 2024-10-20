@@ -38,7 +38,7 @@ class HierarchicalTreeLayout:
         node.setPos(QPointF(position, y_pos))
 
         # Print the node identifier and the calculated y-axis position for debugging
-        print(f"Positioning node {node.identifier} at (x: {position}, y: {y_pos})")
+        # print(f"Positioning node {node.identifier} at (x: {position}, y: {y_pos})")
 
         # Update the LineItems connected to this node
         self.update_lines_for_node(node)
@@ -50,7 +50,7 @@ class HierarchicalTreeLayout:
             for index, child in enumerate(node.children):
                 child_position = child_spacing * (index + 1)
 
-                print(f"Positioning child {child.identifier} at (x: {child_position}, y: {y_pos + spacing})")
+                # print(f"Positioning child {child.identifier} at (x: {child_position}, y: {y_pos + spacing})")
 
                 self.position_nodes(child, generation + 1, child_position, spacing, depth)
 

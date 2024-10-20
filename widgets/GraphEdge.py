@@ -10,22 +10,43 @@ class GraphEdge(QtWidgets.QGraphicsLineItem):
         super().__init__(parent)
 
         self.start = source
-        self.end = target
+        self.end = target if isinstance(target, QtWidgets.QGraphicsItem) else None  # Store target if it's an item
+        self.targetPos = target if isinstance(target, QPointF) else None  # Store position if it's a QPointF
 
-        # Get the center positions of source and target GraphItems
-        sourceCenter = self.getCenterPos(self.start)
-        targetCenter = self.getCenterPos(self.end)
+        self.updatePosition()  # Update position of the line when created
 
-        # Create a line between the two center positions
-        self._line = QLineF(sourceCenter, targetCenter)
-        self.setLine(self._line)
+    def updatePosition(self):
+        """Update the line position between source and target or QPointF."""
+        sourceCenter = self.getCenterPos(self.start)  # Get center of the start GraphItem
+        if self.end:
+            targetCenter = self.getCenterPos(self.end)  # Get center of the target GraphItem if available
+        else:
+            targetCenter = self.targetPos  # Use QPointF if target is not set yet
+
+        if targetCenter:
+            self._line = QLineF(sourceCenter, targetCenter)
+            self.setLine(self._line)  # Set the updated line
+
+    def getCenterPos(self, item):
+        """Helper method to get the center position of a GraphItem or return the QPointF if provided."""
+        if isinstance(item, QtWidgets.QGraphicsItem):
+            rect = item.boundingRect()  # Get bounding rectangle of the item
+            center_x = item.pos().x() + rect.width() / 2  # X-coordinate of the center
+            center_y = item.pos().y() + rect.height() / 2  # Y-coordinate of the center
+            return QPointF(center_x, center_y)
+        elif isinstance(item, QPointF):
+            return item  # If it's already a QPointF, return it
+        return None
+
+    def setEnd(self, end):
+        """Set the target GraphItem and update the line."""
+        self.end = end
+        self.targetPos = None  # Reset target position once the end GraphItem is set
+        self.updatePosition()  # Update the line position accordingly
+
 
     def setStart(self, start):
         self.start = start
-        self.updateLine()
-
-    def setEnd(self, end):
-        self.end = end
         self.updateLine()
 
     def setP2(self, point):
@@ -41,13 +62,6 @@ class GraphEdge(QtWidgets.QGraphicsLineItem):
         if self.end:
             self._line.setP2(self.getCenterPos(self.end))
         self.setLine(self._line)
-
-    def getCenterPos(self, item):
-        """Helper method to get the center position of a GraphItem."""
-        rect = item.boundingRect()  # Get the bounding rectangle of the item
-        center_x = item.pos().x() + rect.width() / 2  # X-coordinate of the center
-        center_y = item.pos().y() + rect.height() / 2  # Y-coordinate of the center
-        return QPointF(center_x, center_y)
 
     def _get_source(self):
         return self.source

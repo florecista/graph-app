@@ -1,7 +1,8 @@
+import base64
 import uuid
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtCore import Qt, QRect, QPointF, QByteArray, QRectF
+from PyQt5.QtGui import QPainter, QColor, QPixmap
 from PyQt5.QtWidgets import QGraphicsPixmapItem, QGraphicsItem
 
 import constants
@@ -12,8 +13,8 @@ class GraphItem(QGraphicsPixmapItem):
     brush = QtGui.QBrush(QtGui.QColor(31, 176, 224))
     controlBrush = QtGui.QBrush(QtGui.QColor(214, 13, 36))
 
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, pixmap=None, label="", attributes=None, position=QPointF(), image=None, image_scale=False):
+        super().__init__(pixmap)
 
         self.identifier = uuid.uuid4()
         self.node_size = 30
@@ -34,7 +35,25 @@ class GraphItem(QGraphicsPixmapItem):
         self.parent = None  # Parent reference
         self.children = []  # List to hold child nodes
 
+        self.label = label
+        self.attributes = attributes or {}
+        self.image = image  # Base64 string for the image
+        self.image_scale = image_scale  # Boolean to indicate whether scaling is applied
+        self.setPos(position)
+
+        # If there's an image provided, handle decoding and scaling here
+        # if self.image:
+        #     self.set_image(self.image, self.image_scale)
+
         self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsGeometryChanges)
+
+    # def set_image(self, image_base64, scale):
+    #     image_data = QByteArray.fromBase64(image_base64.encode())
+    #     pixmap = QPixmap()
+    #     pixmap.loadFromData(image_data)
+    #     if scale:
+    #         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
+    #     self.setPixmap(pixmap)
 
     def hoverEnterEvent(self, event):
         self._is_hovered = True
@@ -47,7 +66,26 @@ class GraphItem(QGraphicsPixmapItem):
         super().hoverLeaveEvent(event)
 
     def paint(self, painter, option, widget=None):
-        if self._is_hovered:
+        # Check if an image is provided and should be used
+        if self.use_image and self.image:  # Ensure image_data is set
+            # Convert base64 image data to QPixmap
+            image_pixmap = self.decode_base64_image(self.image)
+            if not image_pixmap.isNull():  # Make sure pixmap is valid
+                painter.save()
+                painter.setRenderHint(QPainter.Antialiasing, True)
+
+                # If image_scale is True, scale the image to fit the bounding rect
+                if self.image_scale:
+                    # Draw the image scaled to the node's bounding rect
+                    painter.drawPixmap(0, 0, image_pixmap)
+                else:
+                    # Draw the image at its original size
+                    image_rect = QRectF(0, 0, image_pixmap.width(), image_pixmap.height())
+                    painter.drawPixmap(image_rect, image_pixmap)
+
+                painter.restore()
+        # Handle hover and shape drawing if no image or icon is set
+        elif self._is_hovered:
             painter.save()
             painter.setRenderHint(QPainter.Antialiasing, True)
             pen = QtGui.QPen(QtGui.QColor("blue"))
@@ -56,6 +94,7 @@ class GraphItem(QGraphicsPixmapItem):
             new_rect = QRect(0, 0, self.node_size, self.node_size)
             painter.drawEllipse(new_rect)
             painter.restore()
+        # Draw a default shape if no image and no icon is set
         elif not self.show_icon:
             painter.save()
             painter.setRenderHint(QPainter.Antialiasing, True)
@@ -71,8 +110,18 @@ class GraphItem(QGraphicsPixmapItem):
                 painter.drawRect(new_rect)
             else:
                 painter.drawEllipse(self.boundingRect())
+            painter.restore()
+        # Otherwise, fall back to the superclass paint method
         else:
             super().paint(painter, option, widget)
+
+    def decode_base64_image(self, base64_string):
+        # Decode the base64 string into image bytes
+        image_data = base64.b64decode(base64_string)
+        pixmap = QPixmap()
+        # Load the image data into a QPixmap
+        pixmap.loadFromData(image_data)
+        return pixmap
 
     # Identifier methods
     def _get_identifier(self):
@@ -151,9 +200,9 @@ class GraphItem(QGraphicsPixmapItem):
         self.children.append(child)
 
         # Debugging prints to verify relationship
-        print(f"Child {child.identifier} added to parent {self.identifier}")
-        print(f"Parent {self.identifier} now has children: {[c.identifier for c in self.children]}")
-        print(f"Child {child.identifier} parent set to {child.parent.identifier}")
+        # print(f"Child {child.identifier} added to parent {self.identifier}")
+        # print(f"Parent {self.identifier} now has children: {[c.identifier for c in self.children]}")
+        # print(f"Child {child.identifier} parent set to {child.parent.identifier}")
 
     def get_children(self):
         """Return the list of child nodes."""
