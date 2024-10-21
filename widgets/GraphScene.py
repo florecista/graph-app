@@ -45,6 +45,7 @@ class GraphScene(QGraphicsScene):
 
         # build graph item
         graphItem = GraphItem(pixmap)
+        graphItem.setZValue(1)
         graphItem.label = attributes["Type"]
         graphItem.attributes = attributes
         graphItem.setPos(position)
@@ -139,6 +140,7 @@ class GraphScene(QGraphicsScene):
                 self.startItem = item
                 centerPos = self.getCenterPos(item)  # Set the starting position to the center
                 self.newConnection = GraphEdge(item, centerPos)
+                self.newConnection.setZValue(-1)
                 self.addItem(self.newConnection)
 
         super().mousePressEvent(event)

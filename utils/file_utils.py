@@ -57,6 +57,8 @@ def load_graphml_to_scene(graph_scene, file_path):
             image_scale=image_scale
         )
 
+        graph_item.setZValue(1)
+
         # Set the identifier for the GraphItem based on GraphML node ID
         graph_item.identifier = node_id
 
@@ -86,6 +88,8 @@ def load_graphml_to_scene(graph_scene, file_path):
         end_item = node_map[edge_target]
 
         graph_edge = GraphEdge(start_item, end_item)
+
+        graph_edge.setZValue(-1)
 
         # Add the edge to the scene and link it to the start and end nodes
         graph_scene.addItem(graph_edge)
