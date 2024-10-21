@@ -2,7 +2,7 @@ import base64
 import uuid
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QRect, QPointF, QByteArray, QRectF
-from PyQt5.QtGui import QPainter, QColor, QPixmap
+from PyQt5.QtGui import QPainter, QColor, QPixmap, QPainterPath
 from PyQt5.QtWidgets import QGraphicsPixmapItem, QGraphicsItem
 
 import constants
@@ -74,16 +74,27 @@ class GraphItem(QGraphicsPixmapItem):
                 painter.save()
                 painter.setRenderHint(QPainter.Antialiasing, True)
 
+                # Check the shape and apply clipping for Circle
+                if self.node_shape == constants.NodeShapes.Circle:
+                    # Set clipping region to a circle
+                    path = QPainterPath()
+                    rect = QRectF(0, 0, self.node_size, self.node_size)
+                    path.addEllipse(rect)
+                    painter.setClipPath(path)
+
                 # If image_scale is True, scale the image to fit the bounding rect
                 if self.image_scale:
-                    # Draw the image scaled to the node's bounding rect
-                    painter.drawPixmap(0, 0, image_pixmap)
+                    # Draw the image scaled to 30x30
+                    scaled_pixmap = image_pixmap.scaled(self.node_size, self.node_size, Qt.KeepAspectRatio,
+                                                        Qt.SmoothTransformation)
+                    painter.drawPixmap(0, 0, scaled_pixmap)
                 else:
                     # Draw the image at its original size
                     image_rect = QRectF(0, 0, image_pixmap.width(), image_pixmap.height())
                     painter.drawPixmap(image_rect, image_pixmap)
 
                 painter.restore()
+
         # Handle hover and shape drawing if no image or icon is set
         elif self._is_hovered:
             painter.save()
@@ -94,6 +105,7 @@ class GraphItem(QGraphicsPixmapItem):
             new_rect = QRect(0, 0, self.node_size, self.node_size)
             painter.drawEllipse(new_rect)
             painter.restore()
+
         # Draw a default shape if no image and no icon is set
         elif not self.show_icon:
             painter.save()
@@ -104,13 +116,16 @@ class GraphItem(QGraphicsPixmapItem):
             pen.setWidth(2)
             painter.setPen(pen)
             new_rect = QRect(0, 0, self.node_size, self.node_size)
+
             if self.node_shape == constants.NodeShapes.Circle:
                 painter.drawEllipse(new_rect)
             elif self.node_shape == constants.NodeShapes.Square:
                 painter.drawRect(new_rect)
             else:
                 painter.drawEllipse(self.boundingRect())
+
             painter.restore()
+
         # Otherwise, fall back to the superclass paint method
         else:
             super().paint(painter, option, widget)
