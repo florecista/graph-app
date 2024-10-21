@@ -122,6 +122,7 @@ class GraphView(QGraphicsView):
             if (isinstance(child, GraphItem)):
 
                 child.show_icon = parent_window.ui.chkStyleNodeShowIcon.isChecked()
+                child.use_image = parent_window.ui.chkStyleNodeUseImage.isChecked()
 
                 child.node_foreground_color = self.node_foreground_color
                 child.node_background_color = self.node_background_color
