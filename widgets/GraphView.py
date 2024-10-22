@@ -137,6 +137,8 @@ class GraphView(QGraphicsView):
                 if child.isSelected():
                     print(child.identifier, 'selected')
                 count = count + 1
+            if (isinstance(child, GraphEdge)):
+                child.arrow_enabled = parent_window.ui.chkStyleEdgeDirectionArrow.isChecked()
 
         ## Reference - https://stackoverflow.com/questions/12439082/qgraphicssceneclear-clearing-scene-but-not-the-view
         self.viewport().update()
