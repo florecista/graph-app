@@ -316,9 +316,7 @@ class GraphTab(QMainWindow):
             self.ui.statusbar.showMessage("Importing data...")
             self.ui.statusbar.repaint()
             self.ui.graphView.open_graphml(self.ui.graphScene, file_name)
-            #self.ui.graphView.viewport().update()  # Ensure the view is refreshed
-            #self.ui.graphView.update()
-
+            self.ui.cboGraphConfiguration.setCurrentIndex(4)
             self.apply_settings()
             self.ui.statusbar.clearMessage()
 
@@ -331,6 +329,7 @@ class GraphTab(QMainWindow):
         #else:
         #self.ui.graphScene.apply_settings()
         self.ui.graphView.apply_settings(self)
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent: QWidget | None = None) -> None:
