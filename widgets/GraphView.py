@@ -139,6 +139,7 @@ class GraphView(QGraphicsView):
                 count = count + 1
             if (isinstance(child, GraphEdge)):
                 child.arrow_enabled = parent_window.ui.chkStyleEdgeDirectionArrow.isChecked()
+                child.show_label = parent_window.ui.chkStyleEdgeShowLabel.isChecked()
 
         ## Reference - https://stackoverflow.com/questions/12439082/qgraphicssceneclear-clearing-scene-but-not-the-view
         self.viewport().update()
@@ -165,6 +166,8 @@ class GraphView(QGraphicsView):
         else:
             print(f"Scene: {scene}")
 
-        # Proceed to load the GraphML data
-        file_utils.load_graphml_to_scene(scene, filename)
+        # Proceed to load the GraphML data and check if nodes have positions
+        has_positions = file_utils.load_graphml_to_scene(scene, filename)
+        return has_positions
+
 

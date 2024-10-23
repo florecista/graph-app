@@ -306,7 +306,6 @@ class GraphTab(QMainWindow):
         self.__deselected()
         self.apply_settings()
 
-
     def open_graph(self) -> None:
         file_name, _ = QFileDialog.getOpenFileName(
             self, "Open", self.import_path, "GraphML (*.graphml)"
@@ -315,11 +314,18 @@ class GraphTab(QMainWindow):
             self.import_path = str(QFileInfo(file_name).absolutePath())
             self.ui.statusbar.showMessage("Importing data...")
             self.ui.statusbar.repaint()
-            self.ui.graphView.open_graphml(self.ui.graphScene, file_name)
-            self.ui.cboGraphConfiguration.setCurrentIndex(4)
+
+            # Clear the current graphScene before importing new data
+            self.ui.graphScene.clear()
+
+            has_positions = self.ui.graphView.open_graphml(self.ui.graphScene, file_name)
+
+            # IF GraphML nodes do not have saved positions, use default layout
+            if not has_positions:
+                self.ui.cboGraphConfiguration.setCurrentIndex(constants.GraphLayout.ForceDirected)
+
             self.apply_settings()
             self.ui.statusbar.clearMessage()
-
 
     def apply_settings(self):
         self.ui.graphScene.style_updated = True
