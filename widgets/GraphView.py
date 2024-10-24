@@ -170,4 +170,12 @@ class GraphView(QGraphicsView):
         has_positions = file_utils.load_graphml_to_scene(scene, filename)
         return has_positions
 
+    def save_graphml(self, scene, filename):
+        # Ensure the scene is correctly passed
+        if scene is None:
+            print("Error: Scene is not initialized!")
+        else:
+            print(f"Scene: {scene}")
+
+        file_utils.save_graphml(scene, filename)
 

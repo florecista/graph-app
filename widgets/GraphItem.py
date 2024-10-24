@@ -41,6 +41,8 @@ class GraphItem(QGraphicsPixmapItem):
         self.image_scale = image_scale  # Boolean to indicate whether scaling is applied
         self.setPos(position)
 
+        self.node_type = None
+
         # If there's an image provided, handle decoding and scaling here
         # if self.image:
         #     self.set_image(self.image, self.image_scale)

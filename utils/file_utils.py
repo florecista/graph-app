@@ -1,13 +1,14 @@
 import base64
 import ast
 
+from lxml import etree
+
 import networkx as nx
 from managers.json import js_manager
 from widgets.GraphItem import GraphItem
 from widgets.GraphEdge import GraphEdge
 from PyQt5.QtCore import QPointF, Qt, QByteArray
 import ast
-
 
 import os
 from PyQt5.QtGui import QPixmap
@@ -24,13 +25,50 @@ def load_graphml_to_scene(graph_scene, file_path):
     for node_id, node_data in graph.nodes(data=True):
         label = node_data.get("Label", "")
 
-        # Handle image data
-        image_data = node_data.get("Image", {})
-        image_data_dict = ast.literal_eval(image_data)
-        image_base64 = image_data_dict['image']
-        image_name = image_data_dict['name']
-        image_pixmap = load_base64_image(image_base64)
+        if 'Attributes' in node_data:
+            attributes_raw = node_data.get('Attributes', '')
 
+            if attributes_raw:
+                try:
+                    # Case 1: If 'Attributes' is a list (new format with nested dictionaries)
+                    if isinstance(attributes_raw, str):
+                        if attributes_raw.startswith("["):
+                            # This is likely the new format (a list of dicts as a string)
+                            node_data['Attributes'] = ast.literal_eval(attributes_raw)
+                        else:
+                            # Case 2: Handle the old format (semi-colon separated dictionaries)
+                            node_data['Attributes'] = [ast.literal_eval(attr) for attr in attributes_raw.split(';') if
+                                                       attr.strip()]
+                        print(f"Parsed Attributes for node {node_id}: {node_data['Attributes']}")
+                    else:
+                        raise ValueError("Attributes field is not a valid string")
+                except (ValueError, SyntaxError) as e:
+                    print(f"Error parsing Attributes: {e}")
+                    node_data['Attributes'] = []  # Fall back to empty attributes if parsing fails
+            else:
+                node_data['Attributes'] = []  # No attributes found
+
+        # Handle image data safely
+        image_data = node_data.get("Image", None)
+
+        image_base64 = None
+
+        # Safely handle the case where image_data is None or empty
+        if image_data and image_data != '{}':  # Check if image_data is not empty
+            try:
+                image_data_dict = ast.literal_eval(image_data)
+                image_base64 = image_data_dict.get('image', '')  # Use .get() to avoid KeyErrors
+                image_name = image_data_dict.get('name', '')
+                image_pixmap = load_base64_image(image_base64) if image_base64 else None
+            except (ValueError, SyntaxError) as e:
+                print(f"Error parsing image data: {e}")
+                image_data_dict = {}
+                image_pixmap = None  # If there's an error, avoid loading an image
+        else:
+            image_data_dict = {}
+            image_pixmap = None  # Set image to None if there's no valid data
+
+        # Handle image scaling
         image_scale = node_data.get("Image Scale", False)  # Boolean flag for image scaling
 
         # Fetch icon based on Group and Type
@@ -61,10 +99,6 @@ def load_graphml_to_scene(graph_scene, file_path):
 
         # Update node data using js_manager logic
         js_manager.update_node(node_data)
-
-        if 'Attributes' in node_data:
-            node_data['Attributes'] = [ast.literal_eval(item) for item in node_data['Attributes'].split(';')]
-            graph_item.attributes = node_data['Attributes']
 
         graph_item.label = node_data.get('Label', 'Node Name')
 
@@ -135,3 +169,57 @@ def load_base64_image(image_data):
     except Exception as e:
         print(f"Error decoding image: {e}")
         return None
+
+
+def save_graphml(graph_scene, file_path):
+    root = etree.Element("graphml")
+    graph_element = etree.SubElement(root, "graph", edgedefault="undirected")
+
+    # Define keys (using attrib to set 'for' because 'for' is a Python keyword)
+    etree.SubElement(root, "key", id="d0", attrib={"for": "node", "attr.name": "Group", "attr.type": "string"})
+    etree.SubElement(root, "key", id="d1", attrib={"for": "node", "attr.name": "Type", "attr.type": "string"})
+    etree.SubElement(root, "key", id="d2", attrib={"for": "node", "attr.name": "Attributes", "attr.type": "string"})
+    etree.SubElement(root, "key", id="d3", attrib={"for": "node", "attr.name": "Label", "attr.type": "string"})
+    etree.SubElement(root, "key", id="d4", attrib={"for": "node", "attr.name": "Position", "attr.type": "string"})
+    etree.SubElement(root, "key", id="d5", attrib={"for": "node", "attr.name": "Image", "attr.type": "string"})
+    etree.SubElement(root, "key", id="d6", attrib={"for": "node", "attr.name": "Image Scale", "attr.type": "boolean"})
+    etree.SubElement(root, "key", id="d7", attrib={"for": "edge", "attr.name": "label", "attr.type": "string"})
+
+    for item in graph_scene.items():
+        if isinstance(item, GraphItem):
+            node = etree.SubElement(graph_element, "node", id=str(item.identifier))
+
+            # Group (d0)
+            etree.SubElement(node, "data", key="d0").text = item.attributes.get('Group', '')
+
+            # Type (d1)
+            etree.SubElement(node, "data", key="d1").text = item.attributes.get('Type', '')
+
+            # Attributes (d2)
+            etree.SubElement(node, "data", key="d2").text = str(item.attributes.get('Attributes', ''))
+
+            # Label (d3)
+            etree.SubElement(node, "data", key="d3").text = item.attributes.get('Label', '')
+
+            # Position (d4)
+            pos = item.pos()
+            etree.SubElement(node, "data", key="d4").text = f"{pos.x()};{pos.y()}"
+
+            # Image (d5)
+            image_data = item.attributes.get('Image', {})
+            etree.SubElement(node, "data", key="d5").text = str(image_data) if image_data else '{}'
+
+            # Image Scale (d6)
+            etree.SubElement(node, "data", key="d6").text = str(item.attributes.get('Image Scale', 'false')).lower()
+
+    # Save edges
+    for item in graph_scene.items():
+        if isinstance(item, GraphEdge):
+            edge = etree.SubElement(graph_element, "edge", source=str(item.start.identifier), target=str(item.end.identifier))
+
+            # Edge label (d7)
+            etree.SubElement(edge, "data", key="d7").text = item.label or ""
+
+    # Write to file
+    tree = etree.ElementTree(root)
+    tree.write(file_path, pretty_print=True, xml_declaration=True, encoding='UTF-8')

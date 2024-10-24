@@ -55,10 +55,16 @@ class GraphEdge(QGraphicsLineItem):
             return item
         return None
 
-    def setEnd(self, end):
-        self.end = end
-        self.targetPos = None
-        self.updatePosition()
+    def setP2(self, point: QPointF):
+        """Update the graphical end point of the edge."""
+        self._line.setP2(point)  # Update the end point of the line
+        self.setLine(self._line)  # Apply the updated line
+
+    def setEnd(self, end: 'GraphItem'):
+        """Set the target GraphItem at the end of the edge."""
+        self.end = end  # Store the reference to the target GraphItem
+        self.targetPos = None  # Reset target position (optional)
+        self.updatePosition()  # Update the graphical representation
 
     def paint(self, painter, option, widget=None):
         """Custom paint function to handle drawing the line, optional arrow, and label."""

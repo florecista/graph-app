@@ -1,4 +1,6 @@
+import os
 import sys
+from datetime import datetime
 
 from PyQt5.QtCore import QTranslator, QDir, QPoint, QMimeData, QRect, QFileInfo
 from PyQt5.QtGui import QDrag
@@ -327,6 +329,15 @@ class GraphTab(QMainWindow):
             self.apply_settings()
             self.ui.statusbar.clearMessage()
 
+    def save_graph(self) -> None:
+        file_name = datetime.today().strftime("%Y-%m-%d") + "_Graph"
+        default_filename = os.path.join(self.import_path, file_name)
+        file_name, _ = QFileDialog.getSaveFileName(
+            self, "Save", default_filename, "GraphML (*.graphml)"
+        )
+        if file_name:
+            self.ui.graphView.save_graphml(self.ui.graphScene, file_name)
+
     def apply_settings(self):
         self.ui.graphScene.style_updated = True
         #if self.graph_layout_has_changed:
@@ -385,7 +396,7 @@ class MainWindow(QMainWindow):
         action.setDisabled(True)
         action = self.menu_file_items.addAction("&Save...")
         action.setText(self.tr("&Save..."))
-        # action.triggered.connect(self.graph_view.save_graph)
+        action.triggered.connect(self.graph_view.save_graph)
         action = self.menu_file_items.addAction("&Export Image...")
         action.setText(self.tr("&Export Image..."))
         # action.triggered.connect(self.graph_view.export_image)
