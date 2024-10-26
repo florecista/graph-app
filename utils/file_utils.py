@@ -2,6 +2,7 @@ import base64
 import ast
 
 from lxml import etree
+from xml.etree.ElementTree import Element, SubElement, ElementTree, parse
 
 import networkx as nx
 from managers.json import js_manager
@@ -223,3 +224,75 @@ def save_graphml(graph_scene, file_path):
     # Write to file
     tree = etree.ElementTree(root)
     tree.write(file_path, pretty_print=True, xml_declaration=True, encoding='UTF-8')
+
+def save_gexf(scene, file_name):
+    gexf = Element('gexf', xmlns="http://www.gexf.net/1.2draft", version="1.2")
+    graph = SubElement(gexf, 'graph', mode="static", defaultedgetype="directed")
+
+    # Nodes
+    nodes = SubElement(graph, 'nodes')
+    for node in scene.items():
+        if isinstance(node, GraphItem):
+            node_elem = SubElement(nodes, 'node', id=str(node.identifier), label=node.label)
+            # Add more attributes as needed
+
+    # Edges
+    edges = SubElement(graph, 'edges')
+    for edge in scene.items():
+        if isinstance(edge, GraphEdge):
+            edge_elem = SubElement(edges, 'edge',
+                                   source=str(edge.start.identifier),
+                                   target=str(edge.end.identifier))
+            # Add more edge attributes as needed
+
+    # Write to file
+    ElementTree(gexf).write(file_name, encoding="utf-8", xml_declaration=True)
+
+def open_gexf(scene, file_name):
+    # Parse GEXF file
+    tree = parse(file_name)
+    root = tree.getroot()
+
+    # Get GEXF namespace to handle XML elements correctly
+    ns = {"gexf": "http://gexf.net/1.3", "viz": "http://gexf.net/1.3/viz"}
+
+    # Find nodes
+    for node_elem in root.findall(".//gexf:node", namespaces=ns):
+        node_id = node_elem.get("id")
+        label = node_elem.get("label", "")
+
+        # Extract custom attributes (like code, city, latitude, longitude)
+        attributes = {}
+        for attvalue_elem in node_elem.findall(".//gexf:attvalue", namespaces=ns):
+            attr_for = attvalue_elem.get("for")
+            attr_value = attvalue_elem.get("value")
+            if attr_for and attr_value:
+                attributes[attr_for] = attr_value
+
+        # Extract position if available
+        pos_elem = node_elem.find(".//viz:position", namespaces=ns)
+        x = float(pos_elem.get("x", "0")) if pos_elem is not None else 0
+        y = float(pos_elem.get("y", "0")) if pos_elem is not None else 0
+
+        # Create GraphItem with these values
+        graph_item = GraphItem(label=label, attributes=attributes, position=QPointF(x, y))
+        graph_item.identifier = node_id  # Ensure IDs match for edge referencing
+
+        # Add to the scene
+        scene.addItem(graph_item)
+
+    # Find edges
+    for edge_elem in root.findall(".//gexf:edge", namespaces=ns):
+        source_id = edge_elem.get("source")
+        target_id = edge_elem.get("target")
+
+        # Find source and target GraphItems by ID
+        source_item = next((item for item in scene.items() if isinstance(item, GraphItem) and item.identifier == source_id), None)
+        target_item = next((item for item in scene.items() if isinstance(item, GraphItem) and item.identifier == target_id), None)
+
+        # Create GraphEdge if both source and target are found
+        if source_item and target_item:
+            graph_edge = GraphEdge(source=source_item, target=target_item)
+            scene.addItem(graph_edge)
+
+    print("GEXF file loaded successfully into scene!")

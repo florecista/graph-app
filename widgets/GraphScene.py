@@ -138,7 +138,7 @@ class GraphScene(QGraphicsScene):
             item = self.controlPointAt(event.scenePos())
             if item:
                 self.startItem = item
-                centerPos = self.getCenterPos(item)  # Set the starting position to the center
+                centerPos = self.getCenterPos(item)
                 self.newConnection = GraphEdge(item, centerPos)
                 self.newConnection.setZValue(-1)
                 self.addItem(self.newConnection)

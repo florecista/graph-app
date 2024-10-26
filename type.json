@@ -584,6 +584,43 @@
       ]
     },
     {
+      "name": "locations-airport",
+      "label": "Airport",
+      "icon": "locations-airport.svg",
+      "attributes": [
+        {
+          "name": "Name",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Code",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "City",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Latitude",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Longitude",
+          "type": "string",
+          "description": ""
+        },
+        {
+          "name": "Country",
+          "type": "string",
+          "description": ""
+        }
+      ]
+    },
+    {
       "name": "locations-bank",
       "label": "Bank",
       "icon": "locations-bank.svg",

@@ -310,7 +310,7 @@ class GraphTab(QMainWindow):
 
     def open_graph(self) -> None:
         file_name, _ = QFileDialog.getOpenFileName(
-            self, "Open", self.import_path, "GraphML (*.graphml)"
+            self, "Open", self.import_path, "GraphML (*.graphml);;GEXF (*.gexf)"
         )
         if file_name:
             self.import_path = str(QFileInfo(file_name).absolutePath())
@@ -320,9 +320,13 @@ class GraphTab(QMainWindow):
             # Clear the current graphScene before importing new data
             self.ui.graphScene.clear()
 
-            has_positions = self.ui.graphView.open_graphml(self.ui.graphScene, file_name)
+            # Determine which function to call based on file extension
+            if file_name.endswith(".graphml"):
+                has_positions = self.ui.graphView.open_graphml(self.ui.graphScene, file_name)
+            elif file_name.endswith(".gexf"):
+                has_positions = self.ui.graphView.open_gexf(self.ui.graphScene, file_name)
 
-            # IF GraphML nodes do not have saved positions, use default layout
+            # If nodes do not have saved positions, use default layout
             if not has_positions:
                 self.ui.cboGraphConfiguration.setCurrentIndex(constants.GraphLayout.ForceDirected)
 
@@ -332,11 +336,17 @@ class GraphTab(QMainWindow):
     def save_graph(self) -> None:
         file_name = datetime.today().strftime("%Y-%m-%d") + "_Graph"
         default_filename = os.path.join(self.import_path, file_name)
-        file_name, _ = QFileDialog.getSaveFileName(
-            self, "Save", default_filename, "GraphML (*.graphml)"
+        file_name, file_filter = QFileDialog.getSaveFileName(
+            self,
+            "Save",
+            default_filename,
+            "GraphML (*.graphml);;GEXF (*.gexf)"
         )
         if file_name:
-            self.ui.graphView.save_graphml(self.ui.graphScene, file_name)
+            if file_filter == "GraphML (*.graphml)":
+                self.ui.graphView.save_graphml(self.ui.graphScene, file_name)
+            elif file_filter == "GEXF (*.gexf)":
+                self.ui.graphView.save_gexf(self.ui.graphScene, file_name)
 
     def apply_settings(self):
         self.ui.graphScene.style_updated = True

@@ -27,7 +27,7 @@ class JSONManager(QObject):
                 for item in self.data[key]:
                     icon_name = item['icon']
                     svg_file_path = os.path.abspath('images\\' + icon_name)
-                    f = open(svg_file_path, "r")
+                    f = open(svg_file_path)
                     contents = f.read()
 
                     tree = ElementTree.fromstring(contents)

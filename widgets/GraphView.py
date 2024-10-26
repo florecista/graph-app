@@ -170,6 +170,17 @@ class GraphView(QGraphicsView):
         has_positions = file_utils.load_graphml_to_scene(scene, filename)
         return has_positions
 
+    def open_gexf(self, scene, filename):
+        # Ensure the scene is correctly passed
+        if scene is None:
+            print("Error: Scene is not initialized!")
+        else:
+            print(f"Scene: {scene}")
+
+        # Proceed to load the GraphML data and check if nodes have positions
+        has_positions = file_utils.open_gexf(scene, filename)
+        return has_positions
+
     def save_graphml(self, scene, filename):
         # Ensure the scene is correctly passed
         if scene is None:
@@ -178,4 +189,14 @@ class GraphView(QGraphicsView):
             print(f"Scene: {scene}")
 
         file_utils.save_graphml(scene, filename)
+
+
+    def save_gexf(self, scene, filename):
+        # Ensure the scene is correctly passed
+        if scene is None:
+            print("Error: Scene is not initialized!")
+        else:
+            print(f"Scene: {scene}")
+
+        file_utils.save_gexf(scene, filename)
 
