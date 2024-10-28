@@ -2,6 +2,7 @@ from PyQt5.QtCore import pyqtSignal, QRect, QPoint, QSize, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand
 
+import constants
 from constants import NodeShapes, GraphLayout
 from graph.HierarchicalTreeLayout import HierarchicalTreeLayout
 from graph.LayoutFactory import LayoutFactory
@@ -158,6 +159,28 @@ class GraphView(QGraphicsView):
             if not node.has_parent():  # Assuming a method to check for the parent
                 return node
         return None  # Or raise an exception if there's no root
+
+    def tree_plot(self):
+        nodes = []
+        node_index = 1
+        node_str = "node_"
+        edges = []
+        edge_index = 1
+        edge_str = "edge_"
+        for child in self.items():
+            if (isinstance(child, GraphItem)):
+                key = node_str + str(node_index)
+                nodes.append(child)
+                node_index = node_index + 1
+            elif (isinstance(child, GraphEdge)):
+                key = edge_str + str(edge_index)
+                edges.append(child)
+                edge_index = edge_index + 1
+
+        layout_factory = LayoutFactory()
+        layout = layout_factory.create_layout(constants.GraphLayout.HierarchicalTree, nodes, edges, self.height(), self.width())
+        root_node = self.find_root_node(nodes)
+        layout.layout(root_node)
 
     def open_graphml(self, scene, filename):
         # Ensure the scene is correctly passed

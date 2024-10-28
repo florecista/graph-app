@@ -250,7 +250,7 @@ class GraphTab(QMainWindow):
 
         # self.ui.buttonGraphLayoutCircle.clicked.connect(self.graphLayoutCircleClicked)
         # self.ui.buttonGraphLayoutRadial.clicked.connect(self.graphLayoutRadialClicked)
-        # self.ui.buttonGraphLayoutTree.clicked.connect(self.graphLayoutTreeClicked)
+        self.ui.buttonGraphLayoutTree.clicked.connect(self.graphLayoutTreeClicked)
         # self.ui.buttonGraphLayoutSubGraph.clicked.connect(
         #     self.graphLayoutSubGraphClicked
         # )
@@ -307,6 +307,9 @@ class GraphTab(QMainWindow):
 
         self.__deselected()
         self.apply_settings()
+
+    def graphLayoutTreeClicked(self):
+        self.ui.graphView.tree_plot()
 
     def open_graph(self) -> None:
         file_name, _ = QFileDialog.getOpenFileName(
