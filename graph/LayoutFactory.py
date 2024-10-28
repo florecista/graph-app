@@ -6,11 +6,6 @@ from graph.HierarchicalTreeLayout import HierarchicalTreeLayout
 from graph.RadialTreeLayout import RadialTreeLayout
 
 
-# from graph.RadialTreeLayout import RadialTreeLayout  # You'll need to implement this
-# from graph.HierarchicalTreeLayout import HierarchicalTreeLayout  # You'll need to implement this
-# from graph.CircularLayout import CircularLayout  # You'll need to implement this
-# from graph.GridLayout import GridLayout  # You'll need to implement this
-
 class LayoutFactory:
     def create_layout(self, layout, nodes, edges, height, width):
         if layout == constants.GraphLayout.HierarchicalTree:
@@ -25,3 +20,4 @@ class LayoutFactory:
             return FruchtermanReingoldLayout(nodes, edges, height, width)
         else:
             raise ValueError(f"Unknown layout: {layout}")
+
