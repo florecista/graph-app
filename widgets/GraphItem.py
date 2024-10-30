@@ -68,69 +68,53 @@ class GraphItem(QGraphicsPixmapItem):
         super().hoverLeaveEvent(event)
 
     def paint(self, painter, option, widget=None):
+        painter.save()
+        painter.setRenderHint(QPainter.Antialiasing, True)
+
         # Check if an image is provided and should be used
-        if self.use_image and self.image:  # Ensure image_data is set
+        if self.use_image and self.image:
             # Convert base64 image data to QPixmap
             image_pixmap = self.decode_base64_image(self.image)
-            if not image_pixmap.isNull():  # Make sure pixmap is valid
-                painter.save()
-                painter.setRenderHint(QPainter.Antialiasing, True)
-
-                # Check the shape and apply clipping for Circle
+            if not image_pixmap.isNull():  # Ensure pixmap is valid
+                # Apply clipping if Circle shape
                 if self.node_shape == constants.NodeShapes.Circle:
-                    # Set clipping region to a circle
                     path = QPainterPath()
                     rect = QRectF(0, 0, self.node_size, self.node_size)
                     path.addEllipse(rect)
                     painter.setClipPath(path)
 
-                # If image_scale is True, scale the image to fit the bounding rect
+                # Scale the image if required
                 if self.image_scale:
-                    # Draw the image scaled to 30x30
                     scaled_pixmap = image_pixmap.scaled(self.node_size, self.node_size, Qt.KeepAspectRatio,
                                                         Qt.SmoothTransformation)
                     painter.drawPixmap(0, 0, scaled_pixmap)
                 else:
-                    # Draw the image at its original size
                     image_rect = QRectF(0, 0, image_pixmap.width(), image_pixmap.height())
                     painter.drawPixmap(image_rect, image_pixmap)
 
-                painter.restore()
+        # Check if an icon should be displayed
+        elif self.show_icon:
+            # Draw the icon as usual, assuming the icon pixmap is already set on the item
+            super().paint(painter, option, widget)
 
-        # Handle hover and shape drawing if no image or icon is set
-        elif self._is_hovered:
-            painter.save()
-            painter.setRenderHint(QPainter.Antialiasing, True)
-            pen = QtGui.QPen(QtGui.QColor("blue"))
-            pen.setWidth(3)
-            painter.setPen(pen)
-            new_rect = QRect(0, 0, self.node_size, self.node_size)
-            painter.drawEllipse(new_rect)
-            painter.restore()
-
-        # Draw a default shape if no image and no icon is set
-        elif not self.show_icon:
-            painter.save()
-            painter.setRenderHint(QPainter.Antialiasing, True)
-            brush = QtGui.QBrush(self.node_foreground_color)
-            painter.setBrush(brush)
+        # Otherwise, draw the default shape
+        else:
             pen = QtGui.QPen(self.node_background_color)
             pen.setWidth(2)
             painter.setPen(pen)
-            new_rect = QRect(0, 0, self.node_size, self.node_size)
+            painter.setBrush(QtGui.QBrush(self.node_foreground_color))
+
+            shape_rect = QRect(0, 0, self.node_size, self.node_size)
 
             if self.node_shape == constants.NodeShapes.Circle:
-                painter.drawEllipse(new_rect)
+                painter.drawEllipse(shape_rect)
             elif self.node_shape == constants.NodeShapes.Square:
-                painter.drawRect(new_rect)
+                painter.drawRect(shape_rect)
             else:
-                painter.drawEllipse(self.boundingRect())
+                # Fallback to a default shape if node_shape is not set
+                painter.drawEllipse(shape_rect)
 
-            painter.restore()
-
-        # Otherwise, fall back to the superclass paint method
-        else:
-            super().paint(painter, option, widget)
+        painter.restore()
 
     def decode_base64_image(self, base64_string):
         # Decode the base64 string into image bytes
