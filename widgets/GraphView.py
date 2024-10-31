@@ -93,123 +93,110 @@ class GraphView(QGraphicsView):
     import matplotlib.pyplot as plt
 
     def apply_settings(self, parent_window):
-        nodes = []
-        edges = []
+        nodes, edges = self._collect_graph_items()
+        layout_object = parent_window.ui.cboGraphConfiguration.currentData()
+        self._apply_layout(layout_object, nodes, edges, parent_window)
 
-        # Separate nodes and edges
+        # Centrality settings
+        centrality_type = constants.CentralityType(parent_window.ui.cboCentralityType.currentData())
+        centrality_gradient = constants.CentralityGradient(parent_window.ui.cboCentralityGradient.currentData())
+        centrality_showby = constants.CentralityShowBy(parent_window.ui.cboCentralityShowBy.currentData())
+
+        # Apply default settings if centrality is not selected
+        if self._should_apply_default_settings(centrality_type, centrality_gradient, centrality_showby):
+            self._apply_default_node_settings(parent_window)
+            return  # Exit if no centrality analysis is selected
+
+        # Perform centrality analysis and visualization
+        G = self._build_networkx_graph(nodes, edges)
+        centrality_scores = self._calculate_centrality(G, centrality_type)
+        self._apply_centrality_visuals(nodes, centrality_scores, centrality_gradient, centrality_showby)
+        self.viewport().update()
+
+    def _collect_graph_items(self):
+        nodes, edges = [], []
         for child in self.items():
             if isinstance(child, GraphItem):
                 nodes.append(child)
             elif isinstance(child, GraphEdge):
                 edges.append(child)
+        return nodes, edges
 
-        # Layout selection
-        layout_object = parent_window.ui.cboGraphConfiguration.currentData()
+    def _apply_layout(self, layout_object, nodes, edges, parent_window):
         if layout_object and nodes:
             layout_factory = LayoutFactory()
             layout = layout_factory.create_layout(layout_object, nodes, edges, self.height(), self.width())
-
             if isinstance(layout, HierarchicalTreeLayout):
                 root_node = self.find_root_node(nodes)
                 layout.layout(root_node)
             else:
                 layout.layout()
 
-        # Centrality type, gradient, and display option selection
-        centrality_type = constants.CentralityType(parent_window.ui.cboCentralityType.currentData())
-        centrality_gradient = constants.CentralityGradient(parent_window.ui.cboCentralityGradient.currentData())
-        centrality_showby = constants.CentralityShowBy(parent_window.ui.cboCentralityShowBy.currentData())
-
-        # Check if centrality analysis is not selected
-        if (
+    def _should_apply_default_settings(self, centrality_type, centrality_gradient, centrality_showby):
+        return (
                 centrality_type == constants.CentralityType.Select or
                 centrality_gradient == constants.CentralityGradient.Select or
                 centrality_showby == constants.CentralityShowBy.Select
-        ):
-            # Apply default settings since no centrality analysis is selected
-            for child in self.items():
-                if isinstance(child, GraphItem):
-                    # Apply default background color to all nodes
-                    child.node_background_color = self.node_background_color
-                    child.node_foreground_color = self.node_foreground_color
-                    child.show_icon = parent_window.ui.chkStyleNodeShowIcon.isChecked()
-                    child.use_image = parent_window.ui.chkStyleNodeUseImage.isChecked()
-                    child.node_shape = NodeShapes(parent_window.ui.cboStyleNodeShape.currentData())
+        )
 
-                    # Force item update
-                    child.prepareGeometryChange()  # Notify the scene of potential layout change
-                    child.update()  # Refresh node appearance
+    def _apply_default_node_settings(self, parent_window):
+        for child in self.items():
+            if isinstance(child, GraphItem):
+                child.node_background_color = self.node_background_color
+                child.node_foreground_color = self.node_foreground_color
+                child.show_icon = parent_window.ui.chkStyleNodeShowIcon.isChecked()
+                child.use_image = parent_window.ui.chkStyleNodeUseImage.isChecked()
+                child.node_shape = NodeShapes(parent_window.ui.cboStyleNodeShape.currentData())
+                child.prepareGeometryChange()
+                child.update()
+            elif isinstance(child, GraphEdge):
+                child.arrow_enabled = parent_window.ui.chkStyleEdgeDirectionArrow.isChecked()
+                child.show_label = parent_window.ui.chkStyleEdgeShowLabel.isChecked()
+        self.scene().update()
+        self.viewport().repaint()
 
-                elif isinstance(child, GraphEdge):
-                    # Apply edge-specific settings
-                    child.arrow_enabled = parent_window.ui.chkStyleEdgeDirectionArrow.isChecked()
-                    child.show_label = parent_window.ui.chkStyleEdgeShowLabel.isChecked()
-
-            # Force a full scene and viewport update to reflect the changes
-            self.scene().update()  # Update the entire scene
-            self.viewport().repaint()  # Repaint the viewport to ensure changes are displayed
-
-            return  # Exit early as no centrality analysis is needed
-
-        # Create a NetworkX graph to calculate centrality
+    def _build_networkx_graph(self, nodes, edges):
         G = nx.Graph()
         for node in nodes:
             G.add_node(node.identifier)
         for edge in edges:
             G.add_edge(edge.start.identifier, edge.end.identifier)
+        return G
 
-        # Calculate centrality scores based on selected type
-        centrality_scores = {}
+    def _calculate_centrality(self, G, centrality_type):
         if centrality_type == constants.CentralityType.Degrees:
-            centrality_scores = nx.degree_centrality(G)
+            return nx.degree_centrality(G)
         elif centrality_type == constants.CentralityType.Eigenvactor:
-            centrality_scores = nx.eigenvector_centrality(G, max_iter=500)
+            return nx.eigenvector_centrality(G, max_iter=500)
         elif centrality_type == constants.CentralityType.Katz:
-            centrality_scores = nx.katz_centrality(G)
+            return nx.katz_centrality(G)
         elif centrality_type == constants.CentralityType.PageRank:
-            centrality_scores = nx.pagerank(G)
+            return nx.pagerank(G)
         elif centrality_type == constants.CentralityType.Closeness:
-            centrality_scores = nx.closeness_centrality(G)
+            return nx.closeness_centrality(G)
         elif centrality_type == constants.CentralityType.Betweenness:
-            centrality_scores = nx.betweenness_centrality(G)
+            return nx.betweenness_centrality(G)
+        return {}
 
-        # Normalize scores for color mapping
-        if centrality_scores:
-            min_score = min(centrality_scores.values())
-            max_score = max(centrality_scores.values())
-        else:
-            min_score = max_score = 0  # Default in case of no scores
+    def _apply_centrality_visuals(self, nodes, centrality_scores, centrality_gradient, centrality_showby):
+        min_score, max_score = min(centrality_scores.values(), default=0), max(centrality_scores.values(), default=0)
+        colormap = plt.get_cmap(
+            "viridis") if centrality_gradient == constants.CentralityGradient.Viridis else plt.get_cmap("RdBu")
 
-        # Determine color map based on gradient selection
-        if centrality_gradient == constants.CentralityGradient.Viridis:
-            colormap = plt.get_cmap("viridis")
-        elif centrality_gradient == constants.CentralityGradient.RdBu:
-            colormap = plt.get_cmap("RdBu")
-        else:
-            colormap = plt.get_cmap("viridis")  # Default colormap
-
-        # Define min and max sizes for size scaling
-        min_size = 10
-        max_size = 50
-
-        # Apply centrality-based color and size to nodes
+        min_size, max_size = 10, 50
         for node in nodes:
             score = centrality_scores.get(node.identifier, 0)
             normalized_score = (score - min_score) / (max_score - min_score) if max_score > min_score else 0
 
-            # Set color if Color or Both is selected
             if centrality_showby in (constants.CentralityShowBy.Color, constants.CentralityShowBy.Both):
                 color = colormap(normalized_score)
                 qcolor = QColor(int(color[0] * 255), int(color[1] * 255), int(color[2] * 255))
                 node.node_foreground_color = qcolor
 
-            # Set size if Size or Both is selected
             if centrality_showby in (constants.CentralityShowBy.Size, constants.CentralityShowBy.Both):
                 node.node_size = min_size + normalized_score * (max_size - min_size)
 
-            node.update()  # Update node appearance
-
-        self.viewport().update()
+            node.update()
 
     def resizeEvent(self, event):
         super(GraphView, self).resizeEvent(event)
