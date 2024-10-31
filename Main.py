@@ -331,7 +331,7 @@ class GraphTab(QMainWindow):
 
             # If nodes do not have saved positions, use default layout
             if not has_positions:
-                self.ui.cboGraphConfiguration.setCurrentIndex(constants.GraphLayout.ForceDirected)
+                self.ui.cboGraphConfiguration.setCurrentIndex(constants.GraphLayout.FruchtermanReingold)
 
             self.apply_settings()
             self.ui.statusbar.clearMessage()
