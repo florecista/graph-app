@@ -146,6 +146,14 @@ class GraphView(QGraphicsView):
     def _apply_default_node_settings(self, parent_window):
         for child in self.items():
             if isinstance(child, GraphItem):
+                child.show_label = parent_window.ui.chkStyleNodeShowLabel.isChecked()
+                child.label_position = constants.LabelPosition(parent_window.ui.cboStyleNodeLabelPosition.currentData())
+                # In _apply_default_node_settings
+                size = parent_window.ui.cboStyleNodeLabelSize.currentData()
+                if isinstance(size, int):
+                    child.label_size = size
+                else:
+                    child.label_size = 8  # Fallback to a default size if there's an issue
                 child.node_background_color = self.node_background_color
                 child.node_foreground_color = self.node_foreground_color
                 child.show_icon = parent_window.ui.chkStyleNodeShowIcon.isChecked()

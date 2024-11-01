@@ -1,7 +1,7 @@
 import base64
 import uuid
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QRect, QPointF, QByteArray, QRectF
+from PyQt5.QtCore import Qt, QRect, QPointF, QByteArray, QRectF, QPoint
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QPainterPath
 from PyQt5.QtWidgets import QGraphicsPixmapItem, QGraphicsItem
 
@@ -17,6 +17,9 @@ class GraphItem(QGraphicsPixmapItem):
         super().__init__(pixmap)
 
         self.identifier = uuid.uuid4()
+        self.show_label = False
+        self.label_position = constants.LabelPosition.Below
+        self.label_size = 8
         self.node_size = 30
         self.node_shape = constants.NodeShapes.Circle
         self.show_icon = True
@@ -71,19 +74,15 @@ class GraphItem(QGraphicsPixmapItem):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing, True)
 
-        # Check if an image is provided and should be used
+        # Draw image if use_image is True
         if self.use_image and self.image:
-            # Convert base64 image data to QPixmap
             image_pixmap = self.decode_base64_image(self.image)
-            if not image_pixmap.isNull():  # Ensure pixmap is valid
-                # Apply clipping if Circle shape
+            if not image_pixmap.isNull():
                 if self.node_shape == constants.NodeShapes.Circle:
                     path = QPainterPath()
                     rect = QRectF(0, 0, self.node_size, self.node_size)
                     path.addEllipse(rect)
                     painter.setClipPath(path)
-
-                # Scale the image if required
                 if self.image_scale:
                     scaled_pixmap = image_pixmap.scaled(self.node_size, self.node_size, Qt.KeepAspectRatio,
                                                         Qt.SmoothTransformation)
@@ -92,27 +91,41 @@ class GraphItem(QGraphicsPixmapItem):
                     image_rect = QRectF(0, 0, image_pixmap.width(), image_pixmap.height())
                     painter.drawPixmap(image_rect, image_pixmap)
 
-        # Check if an icon should be displayed
+        # Draw icon if show_icon is True
         elif self.show_icon:
-            # Draw the icon as usual, assuming the icon pixmap is already set on the item
             super().paint(painter, option, widget)
 
-        # Otherwise, draw the default shape
+        # Draw default shape otherwise
         else:
             pen = QtGui.QPen(self.node_background_color)
             pen.setWidth(2)
             painter.setPen(pen)
             painter.setBrush(QtGui.QBrush(self.node_foreground_color))
-
             shape_rect = QRect(0, 0, self.node_size, self.node_size)
-
             if self.node_shape == constants.NodeShapes.Circle:
                 painter.drawEllipse(shape_rect)
             elif self.node_shape == constants.NodeShapes.Square:
                 painter.drawRect(shape_rect)
             else:
-                # Fallback to a default shape if node_shape is not set
                 painter.drawEllipse(shape_rect)
+
+        # Draw label if show_label is True and label text is not empty
+        if self.show_label and self.label:
+            font = painter.font()
+            font.setPointSize(int(self.label_size))  # Convert label_size to int
+            painter.setFont(font)
+            painter.setPen(QtGui.QPen(Qt.black))  # Set text color to black (or customize if needed)
+
+            # Determine label position based on label_position
+            text_rect = painter.boundingRect(QRect(0, 0, self.node_size, self.node_size), Qt.AlignCenter, self.label)
+            if self.label_position == constants.LabelPosition.Below:
+                text_rect.moveTop(self.node_size + 5)  # Position below node
+            elif self.label_position == constants.LabelPosition.Above:
+                text_rect.moveBottom(-5)  # Position above node
+            else:  # Center position
+                text_rect.moveCenter(QPoint(self.node_size / 2, self.node_size / 2))
+
+            painter.drawText(text_rect, Qt.AlignCenter, self.label)
 
         painter.restore()
 
