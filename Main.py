@@ -299,7 +299,7 @@ class GraphTab(QMainWindow):
         v_layout.addWidget(self.remove_button)
 
     def __node_property_changed(self):
-        self.ui.graphScene.apply_settings()
+        self.ui.graphView.apply_settings(self)
 
     def __edge_property_changed(self):
         self.ui.graphView.apply_settings(self)

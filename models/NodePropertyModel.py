@@ -21,7 +21,14 @@ class NodePropertyModel(QAbstractTableModel):
         return self.createIndex(row, column, self.node)
 
     def rowCount(self, parent: QModelIndex = QModelIndex()):
-        return len(self.node_valid_keys)
+        # Check if self.node is None and return 0 if it is
+        if not self.node:
+            return 0
+
+        # Include high-level attributes + items from self.node.attributes['Attributes']
+        attributes_count = len(
+            self.node.attributes.get('Attributes', []))  # Use get to avoid errors if 'Attributes' is missing
+        return len(self.node_valid_keys) + attributes_count
 
     def columnCount(self, parent: QModelIndex = QModelIndex()):
         return 2
@@ -43,143 +50,79 @@ class NodePropertyModel(QAbstractTableModel):
         if not self.node or not index.isValid():
             return None
 
-        key = self.node_valid_keys[index.row()]
-        if role in (Qt.DisplayRole, Qt.EditRole):
-            if index.column() == 0:
-                return key  # Property name
-            elif index.column() == 1:
-                if isinstance(self.node, GraphItem):
-                    return self.node.attributes.get(key, '')
-                elif isinstance(self.node, dict):
-                    return self.node.get(key, '')
-
-        elif role == Qt.ToolTipRole and key == 'Image' and index.column() == 1:
-            image_data = self.node.attributes.get('Image', {}).get('image', '') if isinstance(self.node, GraphItem) else self.node.get('Image', {}).get('image', '')
-            image = QImage.fromData(self.__str_to_q_byte_array(image_data)).scaled(300, 300, Qt.KeepAspectRatio)
-            if not image.isNull():
-                data = QByteArray()
-                buffer = QBuffer(data)
-                image.save(buffer, 'PNG')
-                return f"<img src='data:image/png;base64,{bytes(data.toBase64()).decode()}'>"
-
-        elif role == Qt.DecorationRole and key == 'Type' and index.column() == 1:
-            if isinstance(self.node, GraphItem):
-                return js_manager.icons[js_manager.icon_name(self.node.attributes.get('Group', ''), self.node.attributes.get('Type', ''))]
-            elif isinstance(self.node, dict):
-                return js_manager.icons[js_manager.icon_name(self.node.get('Group', ''), self.node.get('Type', ''))]
-
-        elif role == Qt.CheckStateRole and isinstance(self.node.get(key, None), bool):
-            return Qt.Checked if self.node.get(key) else Qt.Unchecked
-
-        elif role == Qt.UserRole:
-            if key == 'Group':
-                return (self.node.attributes.get('Group', ''), self.groups) if isinstance(self.node, GraphItem) else (self.node.get('Group', ''), self.groups)
-            elif key == 'Type':
-                return (self.node.attributes.get('Type', ''), self.types, js_manager.qt_icons(self.node.attributes.get('Group', ''))) if isinstance(self.node, GraphItem) else (self.node.get('Type', ''), self.types, js_manager.qt_icons(self.node.get('Group', '')))
-            elif key == 'Label':
-                return self.node.attributes.get('Label', '') if isinstance(self.node, GraphItem) else self.node.get('Label', '')
-
-        return None
-
-    def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
-        if not self.node:
-            return None
-
-        if index.isValid():
+        if index.row() < self.offset:  # For high-level attributes
             key = self.node_valid_keys[index.row()]
-
-            # Handle display and edit roles for both columns
-            if role == Qt.DisplayRole or role == Qt.EditRole:
-                if index.column() == 0:  # Property name
+            if role in (Qt.DisplayRole, Qt.EditRole):
+                if index.column() == 0:
                     return key
-                elif index.column() == 1:  # Property value
-                    if isinstance(self.node, dict):
-                        return self.node.get(key, '')
-                    elif isinstance(self.node, GraphItem):
-                        return self.node.attributes.get(key, '')
-
-            # Handle check state role specifically for boolean values
-            elif role == Qt.CheckStateRole:
-                if isinstance(self.node, dict):
-                    value = self.node.get(key, None)
-                elif isinstance(self.node, GraphItem):
-                    value = self.node.attributes.get(key, None)
-                if isinstance(value, bool):
-                    return Qt.Checked if value else Qt.Unchecked
-            elif role == Qt.ToolTipRole:
-                if index.row() < self.offset and index.column() == 1:
-                    if self.node_valid_keys[index.row()] == 'Image':
-                        # Convert direct Base64 string to image
-                        image = QImage.fromData(self.__str_to_q_byte_array(self.node['Image']))
-                        image = image.scaled(300, 300, Qt.KeepAspectRatio)
-                        if not image.isNull():
-                            data = QByteArray()
-                            buffer = QBuffer(data)
-                            image.save(buffer, 'PNG')
-                            buffer.close()
-                            return "<img src='data:image/png;base64,{}]'>".format(bytes(data.toBase64()).decode())
-            elif role == Qt.DecorationRole:
-                if index.row() < self.offset and index.column() == 1:
-                    if self.node_valid_keys[index.row()] == 'Type':
-                        assert js_manager is not None
-                        return js_manager.icons[js_manager.icon_name(self.node['Group'], self.node['Type'])]
-                    if self.node_valid_keys[index.row()] == 'Image':
-                        pxm = QPixmap()
-                        # Load from direct Base64 string
-                        pxm.loadFromData(self.__str_to_q_byte_array(self.node['Image']))
-                        return QIcon(pxm)
-                return None
+                elif index.column() == 1:
+                    return self.node.attributes.get(key, '')
             elif role == Qt.UserRole:
-                if key == 'Group':
-                    return (self.node.get('Group', ''), self.groups) if isinstance(self.node, dict) else (
-                    self.node.attributes.get('Group', ''), self.groups)
-                elif key == 'Type':
-                    return (self.node.get('Type', ''), self.types) if isinstance(self.node, dict) else (
-                    self.node.attributes.get('Type', ''), self.types)
-                elif key == 'Label':
-                    return (self.node.get('Label', ''), self.label_types) if isinstance(self.node, dict) else (
-                    self.node.attributes.get('Label', ''), self.label_types)
-                else:
-                    return self.node.get(key) if isinstance(self.node, dict) else self.node.attributes.get(key)
+                return self._get_user_role_data(key)
+
+        else:  # For attributes within 'Attributes'
+            attr_index = index.row() - self.offset
+            attributes = self.node.attributes.get('Attributes', [])
+            if attr_index < len(attributes):
+                attribute = attributes[attr_index]
+                if role in (Qt.DisplayRole, Qt.EditRole):
+                    if index.column() == 0:
+                        return attribute.get('name', '')
+                    elif index.column() == 1:
+                        return attribute.get('description', '')
+                elif role == Qt.UserRole:
+                    return attribute.get('description', '')
 
         return None
+
+    def setData(self, index: QModelIndex, value, role: int = Qt.EditRole) -> bool:
+        if not index.isValid() or role != Qt.EditRole or not self.node:
+            return False
+
+        if index.row() < len(self.node_valid_keys):
+            # Update high-level attribute directly in the node attributes
+            key = self.node_valid_keys[index.row()]
+            self.node.attributes[key] = value
+        else:
+            # Update an item in the Attributes list
+            attribute_index = index.row() - len(self.node_valid_keys)
+            if 0 <= attribute_index < len(self.node.attributes['Attributes']):
+                self.node.attributes['Attributes'][attribute_index]['description'] = value
+            else:
+                return False  # Prevent out-of-range errors
+
+        self.dataChanged.emit(index, index)  # Notify the view of the data change
+        return True
+
+    def _get_user_role_data(self, key):
+        if key == 'Group':
+            return (self.node.attributes.get('Group', ''), self.groups)
+        elif key == 'Type':
+            return (self.node.attributes.get('Type', ''), self.types, js_manager.qt_icons(self.node.attributes.get('Group', '')))
+        elif key == 'Label':
+            return self.node.attributes.get('Label', '')
 
     def reset(self, node):
         self.beginResetModel()
-
-        # Check if 'selected_node' exists and set self.node accordingly
         self.node = node.get('selected_node') if isinstance(node, dict) and 'selected_node' in node else node
 
         if isinstance(self.node, GraphItem):
             self.node_valid_keys = list(self.node.attributes.keys())
-            if 'Attributes' in self.node_valid_keys:
-                self.node_valid_keys.remove('Attributes')
-            if 'Position' in self.node_valid_keys:
-                self.node_valid_keys.remove('Position')
+            self.node_valid_keys = [k for k in self.node_valid_keys if k not in ('Attributes', 'Position')]
+            self.offset = len(self.node_valid_keys)
             group = self.node.attributes.get('Group', '')
             node_type = self.node.attributes.get('Type', '')
-        elif isinstance(self.node, dict):
-            self.node_valid_keys = list(self.node.keys())
-            group = self.node.get('Group', '')
-            node_type = self.node.get('Type', '')
         else:
-            # Handle case where node is neither GraphItem nor dict
-            self.node_valid_keys = []
-            self.groups = []
-            self.types = []
-            self.label_types = []
+            self.node_valid_keys, self.groups, self.types, self.label_types = [], [], [], []
             self.endResetModel()
             return
 
-        # Populate groups, types, and label_types based on group and node_type
         if group:
             self.groups = js_manager.groups()
             self.types = js_manager.types(group)
             self.label_types = js_manager.attribute_names(group, node_type)
         else:
-            self.groups = []
-            self.types = []
-            self.label_types = []
+            self.groups, self.types, self.label_types = [], [], []
 
         self.endResetModel()
 
