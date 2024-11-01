@@ -74,7 +74,7 @@ class GraphItem(QGraphicsPixmapItem):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing, True)
 
-        # Draw image if use_image is True
+        # Check if an image is provided and should be used
         if self.use_image and self.image:
             image_pixmap = self.decode_base64_image(self.image)
             if not image_pixmap.isNull():
@@ -83,6 +83,7 @@ class GraphItem(QGraphicsPixmapItem):
                     rect = QRectF(0, 0, self.node_size, self.node_size)
                     path.addEllipse(rect)
                     painter.setClipPath(path)
+
                 if self.image_scale:
                     scaled_pixmap = image_pixmap.scaled(self.node_size, self.node_size, Qt.KeepAspectRatio,
                                                         Qt.SmoothTransformation)
@@ -91,17 +92,17 @@ class GraphItem(QGraphicsPixmapItem):
                     image_rect = QRectF(0, 0, image_pixmap.width(), image_pixmap.height())
                     painter.drawPixmap(image_rect, image_pixmap)
 
-        # Draw icon if show_icon is True
         elif self.show_icon:
             super().paint(painter, option, widget)
 
-        # Draw default shape otherwise
         else:
             pen = QtGui.QPen(self.node_background_color)
             pen.setWidth(2)
             painter.setPen(pen)
             painter.setBrush(QtGui.QBrush(self.node_foreground_color))
+
             shape_rect = QRect(0, 0, self.node_size, self.node_size)
+
             if self.node_shape == constants.NodeShapes.Circle:
                 painter.drawEllipse(shape_rect)
             elif self.node_shape == constants.NodeShapes.Square:
@@ -109,23 +110,34 @@ class GraphItem(QGraphicsPixmapItem):
             else:
                 painter.drawEllipse(shape_rect)
 
-        # Draw label if show_label is True and label text is not empty
+        # Draw label if show_label is True and label key is set
         if self.show_label and self.label:
-            font = painter.font()
-            font.setPointSize(int(self.label_size))  # Convert label_size to int
-            painter.setFont(font)
-            painter.setPen(QtGui.QPen(Qt.black))  # Set text color to black (or customize if needed)
+            label_text = ''
 
-            # Determine label position based on label_position
-            text_rect = painter.boundingRect(QRect(0, 0, self.node_size, self.node_size), Qt.AlignCenter, self.label)
-            if self.label_position == constants.LabelPosition.Below:
-                text_rect.moveTop(self.node_size + 5)  # Position below node
-            elif self.label_position == constants.LabelPosition.Above:
-                text_rect.moveBottom(-5)  # Position above node
-            else:  # Center position
-                text_rect.moveCenter(QPoint(self.node_size / 2, self.node_size / 2))
+            # Access the nested Attributes list within self.attributes
+            attributes_list = self.attributes.get('Attributes', [])
+            if isinstance(attributes_list, list):
+                # Find the attribute in attributes_list matching self.label
+                label_text = next((attr['description'] for attr in attributes_list if attr.get('name') == self.label),
+                                  '')
 
-            painter.drawText(text_rect, Qt.AlignCenter, self.label)
+            if label_text:  # Only draw if label_text is found
+                font = painter.font()
+                font.setPointSize(int(self.label_size))
+                painter.setFont(font)
+                painter.setPen(QtGui.QPen(Qt.black))  # Set text color to black
+
+                # Determine label position
+                text_rect = painter.boundingRect(QRect(0, 0, self.node_size, self.node_size), Qt.AlignCenter,
+                                                 label_text)
+                if self.label_position == constants.LabelPosition.Below:
+                    text_rect.moveTop(self.node_size + 5)  # Position below node
+                elif self.label_position == constants.LabelPosition.Above:
+                    text_rect.moveBottom(-5)  # Position above node
+                else:  # Center position
+                    text_rect.moveCenter(QPoint(self.node_size / 2, self.node_size / 2))
+
+                painter.drawText(text_rect, Qt.AlignCenter, label_text)
 
         painter.restore()
 
