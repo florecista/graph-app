@@ -21,13 +21,10 @@ class NodePropertyModel(QAbstractTableModel):
         return self.createIndex(row, column, self.node)
 
     def rowCount(self, parent: QModelIndex = QModelIndex()):
-        # Check if self.node is None and return 0 if it is
         if not self.node:
             return 0
-
-        # Include high-level attributes + items from self.node.attributes['Attributes']
-        attributes_count = len(
-            self.node.attributes.get('Attributes', []))  # Use get to avoid errors if 'Attributes' is missing
+        # Get the number of valid keys and the count of 'Attributes' items if they exist
+        attributes_count = len(self.node.attributes.get('Attributes', [])) if isinstance(self.node, GraphItem) else 0
         return len(self.node_valid_keys) + attributes_count
 
     def columnCount(self, parent: QModelIndex = QModelIndex()):
@@ -50,29 +47,34 @@ class NodePropertyModel(QAbstractTableModel):
         if not self.node or not index.isValid():
             return None
 
-        if index.row() < self.offset:  # For high-level attributes
+        total_rows = self.rowCount()  # Get the total number of rows
+        if index.row() >= total_rows:
+            return None
+
+        # Retrieve the key based on the row index
+        if index.row() < len(self.node_valid_keys):
             key = self.node_valid_keys[index.row()]
-            if role in (Qt.DisplayRole, Qt.EditRole):
-                if index.column() == 0:
-                    return key
-                elif index.column() == 1:
-                    return self.node.attributes.get(key, '')
-            elif role == Qt.UserRole:
-                return self._get_user_role_data(key)
+        else:
+            # Handle attribute data if the row is beyond the high-level keys
+            attr_index = index.row() - len(self.node_valid_keys)
+            if 'Attributes' in self.node.attributes:
+                attribute = self.node.attributes['Attributes'][attr_index]
+                key = attribute.get('name', '')
+            else:
+                return None
 
-        else:  # For attributes within 'Attributes'
-            attr_index = index.row() - self.offset
-            attributes = self.node.attributes.get('Attributes', [])
-            if attr_index < len(attributes):
-                attribute = attributes[attr_index]
-                if role in (Qt.DisplayRole, Qt.EditRole):
-                    if index.column() == 0:
-                        return attribute.get('name', '')
-                    elif index.column() == 1:
-                        return attribute.get('description', '')
-                elif role == Qt.UserRole:
-                    return attribute.get('description', '')
+        # Now use the 'key' to return the appropriate data based on the role
+        if role in (Qt.DisplayRole, Qt.EditRole):
+            if index.column() == 0:
+                return key  # Property name
+            elif index.column() == 1:
+                if isinstance(self.node, GraphItem):
+                    return self.node.attributes.get(key, '') if index.row() < len(
+                        self.node_valid_keys) else attribute.get('description', '')
+                elif isinstance(self.node, dict):
+                    return self.node.get(key, '')
 
+        # Handle other roles as needed...
         return None
 
     def setData(self, index: QModelIndex, value, role: int = Qt.EditRole) -> bool:

@@ -8,6 +8,9 @@ from PyQt5.QtCore import QObject, Qt, QTemporaryFile, QBuffer
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtWidgets import QToolBox, QWidget, QSizePolicy, QSpacerItem, QGridLayout, QVBoxLayout, QLabel
 
+from widgets.GraphItem import GraphItem
+
+
 class JSONManager(QObject):
     node_updated = QtCore.pyqtSignal(dict)
 
@@ -142,35 +145,42 @@ class JSONManager(QObject):
             attribute_names.extend([item['name'] for item in element['attributes']])
         return attribute_names
 
-    def update_node_group(self, node: dict, node_group: str) -> None:
-        if node['Group'] == node_group:
-            return
-        node['Group'] = node_group
-        items = [item for item in self.data[node['Group']]]
-        assert len(items) > 0
-        item = items[0]
-        self.update_node_type(node=node, node_type=item['label'])
+    def update_node_group(self, node, node_group: str) -> None:
+        # Check if node is a GraphItem or a dict, and handle accordingly
+        if isinstance(node, GraphItem):
+            if node.attributes.get('Group') == node_group:
+                return
+            node.attributes['Group'] = node_group
+            items = [item for item in self.data.get(node_group, [])]
+            if items:
+                self.update_node_type(node, items[0]['label'])  # Use the first available type
+        elif isinstance(node, dict):
+            if node['Group'] == node_group:
+                return
+            node['Group'] = node_group
+            items = [item for item in self.data.get(node_group, [])]
+            if items:
+                self.update_node_type(node, items[0]['label'])
 
-    def update_node_type(self, node: dict, node_type: str) -> None:
-        if node['Type'] == node_type:
-            return
-        node['Type'] = node_type
-
-        items = [item for item in self.data[node['Group']] if item['label'] == node['Type']]
-        assert len(items) == 1
-        item = items[0]
-        if 'attributes' in item.keys():
-            node['Attributes'] = item['attributes'].copy()
-        else:
-            node['Attributes'] = []
-
-        if 'Image' in node.keys():
-            node['Image'] = {'name': '', 'image': ''}
-
-        if 'Label' not in node.keys() or node['Label'] not in self.attribute_names(node['Group'], node['Type']):
-            node['Label'] = 'Node Name'
-
-        self.node_updated.emit(node)
+    def update_node_type(self, node, node_type: str) -> None:
+        # Check if node is a GraphItem or a dict, and handle accordingly
+        if isinstance(node, GraphItem):
+            if node.attributes.get('Type') == node_type:
+                return
+            node.attributes['Type'] = node_type
+            # Update node's attributes based on selected type
+            items = [item for item in self.data.get(node.attributes.get('Group', ''), []) if item['label'] == node_type]
+            if items:
+                node.attributes['Attributes'] = items[0].get('attributes', []).copy()
+                node.attributes['Label'] = node.attributes.get('Label', 'Node Name')
+        elif isinstance(node, dict):
+            if node['Type'] == node_type:
+                return
+            node['Type'] = node_type
+            items = [item for item in self.data.get(node['Group'], []) if item['label'] == node_type]
+            if items:
+                node['Attributes'] = items[0].get('attributes', []).copy()
+                node['Label'] = node.get('Label', 'Node Name')
 
     def update_node(self, node: dict) -> bool:
         #node_attributes = ('Group', 'Type', 'Label', 'Image', 'Position', 'Attributes')
