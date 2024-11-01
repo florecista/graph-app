@@ -152,6 +152,10 @@ class NodePropertyModel(QAbstractTableModel):
 
         if isinstance(self.node, GraphItem):
             self.node_valid_keys = list(self.node.attributes.keys())
+            if 'Attributes' in self.node_valid_keys:
+                self.node_valid_keys.remove('Attributes')
+            if 'Position' in self.node_valid_keys:
+                self.node_valid_keys.remove('Position')
             group = self.node.attributes.get('Group', '')
             node_type = self.node.attributes.get('Type', '')
         elif isinstance(self.node, dict):
