@@ -1,17 +1,20 @@
+# Third-party imports
 import networkx as nx
+from matplotlib import pyplot as plt
+
+# PyQt5 imports
 from PyQt5.QtCore import pyqtSignal, QRect, QPoint, QSize, Qt, QRectF
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand
-from matplotlib import pyplot as plt
 
+# Local imports
 import constants
-from constants import NodeShapes, GraphLayout
+from constants import NodeShapes
 from graph.HierarchicalTreeLayout import HierarchicalTreeLayout
 from graph.LayoutFactory import LayoutFactory
 from utils import file_utils
 from widgets.GraphEdge import GraphEdge
 from widgets.GraphItem import GraphItem
-
 
 ## Reference - https://stackoverflow.com/questions/10770255/resize-qgraphicsview-doesnt-move-the-widgets
 ##
@@ -92,13 +95,6 @@ class GraphView(QGraphicsView):
                 # print(str(len(selected)), 'nodes selected')
         self.changeRubberBand = False
         QGraphicsView.mouseReleaseEvent(self,event)
-
-    from PyQt5.QtGui import QColor
-    import networkx as nx
-
-    from PyQt5.QtGui import QColor
-    import networkx as nx
-    import matplotlib.pyplot as plt
 
     def apply_settings(self, parent_window):
         nodes, edges = self._collect_graph_items()
