@@ -106,29 +106,29 @@ class NodePropertyModel(QAbstractTableModel):
                     value = self.node.attributes.get(key, None)
                 if isinstance(value, bool):
                     return Qt.Checked if value else Qt.Unchecked
-
-            # Tooltip and decoration roles
-            elif role == Qt.ToolTipRole and index.column() == 1 and key == "Image":
-                image_data = self.node.get("Image", {}).get("image", '') if isinstance(self.node,
-                                                                                       dict) else self.node.attributes.get(
-                    "Image", {}).get("image", '')
-                image = QImage.fromData(self.__str_to_q_byte_array(image_data))
-                image = image.scaled(300, 300, Qt.KeepAspectRatio)
-                if not image.isNull():
-                    data = QByteArray()
-                    buffer = QBuffer(data)
-                    image.save(buffer, 'PNG')
-                    buffer.close()
-                    return "<img src='data:image/png;base64,{}'>".format(bytes(data.toBase64()).decode())
-            elif role == Qt.DecorationRole and index.column() == 1 and key == "Image":
-                image_data = self.node.get("Image", {}).get("image", '') if isinstance(self.node,
-                                                                                       dict) else self.node.attributes.get(
-                    "Image", {}).get("image", '')
-                pxm = QPixmap()
-                pxm.loadFromData(self.__str_to_q_byte_array(image_data))
-                return QIcon(pxm)
-
-            # User role for editable controls in delegate
+            elif role == Qt.ToolTipRole:
+                if index.row() < self.offset and index.column() == 1:
+                    if self.node_valid_keys[index.row()] == 'Image':
+                        # Convert direct Base64 string to image
+                        image = QImage.fromData(self.__str_to_q_byte_array(self.node['Image']))
+                        image = image.scaled(300, 300, Qt.KeepAspectRatio)
+                        if not image.isNull():
+                            data = QByteArray()
+                            buffer = QBuffer(data)
+                            image.save(buffer, 'PNG')
+                            buffer.close()
+                            return "<img src='data:image/png;base64,{}]'>".format(bytes(data.toBase64()).decode())
+            elif role == Qt.DecorationRole:
+                if index.row() < self.offset and index.column() == 1:
+                    if self.node_valid_keys[index.row()] == 'Type':
+                        assert js_manager is not None
+                        return js_manager.icons[js_manager.icon_name(self.node['Group'], self.node['Type'])]
+                    if self.node_valid_keys[index.row()] == 'Image':
+                        pxm = QPixmap()
+                        # Load from direct Base64 string
+                        pxm.loadFromData(self.__str_to_q_byte_array(self.node['Image']))
+                        return QIcon(pxm)
+                return None
             elif role == Qt.UserRole:
                 if key == 'Group':
                     return (self.node.get('Group', ''), self.groups) if isinstance(self.node, dict) else (
