@@ -1,13 +1,9 @@
-from PySide2.QtWidgets import QItemDelegate, QLineEdit, QWidget, QStyleOptionViewItem
-from PySide2.QtCore import Qt, QModelIndex, QAbstractItemModel, Slot, QRegExp
-from PySide2.QtGui import QRegExpValidator
-
-
-# from PySide2.QtGui import QDoubleValidator
-
+from PyQt5.QtCore import QModelIndex, Qt, QRegExp, QAbstractItemModel, pyqtSlot
+from PyQt5.QtGui import QRegExpValidator
+from PyQt5.QtWidgets import QItemDelegate, QWidget, QLineEdit
 
 class EdgePropertyDelegate(QItemDelegate):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem', index: QModelIndex):
@@ -17,20 +13,13 @@ class EdgePropertyDelegate(QItemDelegate):
             editor = QLineEdit(parent)
         elif isinstance(data, float):
             editor = QLineEdit(parent)
-
             validator = QRegExpValidator(QRegExp("[+-]?\\d*[\\.,]?\\d+"), parent)
-            # validator = QDoubleValidator(parent)
-            # validator.setNotation(QDoubleValidator.StandardNotation)
-            # validator.setBottom(0)
-            # validator.setDecimals(6)
-
             editor.setValidator(validator)
         return editor
 
     def setModelData(self, editor: QWidget, model: QAbstractItemModel, index: QModelIndex) -> None:
-        if isinstance(editor, QLineEdit):
-            if editor.hasAcceptableInput():
-                model.setData(index, editor.text(), Qt.EditRole)
+        if isinstance(editor, QLineEdit) and editor.hasAcceptableInput():
+            model.setData(index, editor.text(), Qt.EditRole)
 
     def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
         if isinstance(editor, QLineEdit):
@@ -40,7 +29,7 @@ class EdgePropertyDelegate(QItemDelegate):
     def updateEditorGeometry(self, editor: QWidget, option: 'QStyleOptionViewItem', index: QModelIndex) -> None:
         editor.setGeometry(option.rect)
 
-    @Slot()
+    @pyqtSlot()
     def __editing_finished(self) -> None:
         self.commitData.emit(self.sender())
         self.closeEditor.emit(self.sender())

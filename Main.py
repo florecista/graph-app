@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget, QMen
     QTableView, QAbstractItemView, QHeaderView, QVBoxLayout, QPushButton, QColorDialog, QFileDialog
 
 import constants
+from delegates.EdgePropertyDelegate import EdgePropertyDelegate
 from delegates.NodePropertyDelegate import NodePropertyDelegate
 from managers import js_manager
 from models.EdgePropertyModel import EdgePropertyModel
@@ -69,6 +70,7 @@ class GraphTab(QMainWindow):
         self.__init_property_view()
 
         self.ui.graphView.nodes_selection_changed.connect(self.__node_selection_changed)
+        self.ui.graphView.edges_selection_changed.connect(self.__edge_selection_changed)
 
         self.import_path = ""
 
@@ -79,6 +81,13 @@ class GraphTab(QMainWindow):
         self.tableView.setItemDelegate(NodePropertyDelegate(self.tableView))
         self.node_property_model.reset(node)
         self.remove_button.setEnabled(len(node) > 0)
+
+    def __edge_selection_changed(self, index):
+        self.tableView.setModel(self.edge_property_model)
+        self.tableView.setItemDelegate(EdgePropertyDelegate(self.tableView))
+        self.edge_property_model.edge_selection_changed(index)
+        self.remove_button.setEnabled(index > -1)
+
     #
     # def mousePressEvent(self, event):
     #     if event.type() == Qt.MouseButton.LeftButton:

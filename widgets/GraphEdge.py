@@ -85,6 +85,20 @@ class GraphEdge(QGraphicsLineItem):
         if self.show_label and self.label:
             self._draw_label(painter)
 
+    def controlPoints(self):
+        """Return the start and end points of the line."""
+        start_point = self.getCenterPos(self.start)
+        end_point = self.getCenterPos(self.end) if self.end else self.targetPos
+        return start_point, end_point
+
+    def updateLine(self):
+        """Update the position of the line based on the current positions of start and end nodes."""
+        if self.start:
+            self._line.setP1(self.getCenterPos(self.start))
+        if self.end:
+            self._line.setP2(self.getCenterPos(self.end))
+        self.setLine(self._line)
+
     def updatePosition(self):
         """Update the line position between source and target or QPointF."""
         sourceCenter = self.getCenterPos(self.start)

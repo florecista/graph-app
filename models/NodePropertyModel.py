@@ -1,172 +1,184 @@
-
-from datetime import datetime
-from datetime import date
-
+from datetime import datetime, date
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QByteArray, QBuffer
 from PyQt5.QtGui import QImage, QPixmap, QIcon
-
 from managers import js_manager
-from utils.utils import signal_throttle
+from widgets.GraphItem import GraphItem
+
 
 class NodePropertyModel(QAbstractTableModel):
     def __init__(self, parent=None):
-        QAbstractTableModel.__init__(self, parent)
-        self.node: dict = {}
-        self.node_valid_keys: list = []
-        self.groups: list[str] = []
-        self.types: list[str] = []
-        self.label_types: list[str] = []
+        super().__init__(parent)
+        self.node = None  # Can be a GraphItem or dict
+        self.node_valid_keys = []
+        self.groups = []
+        self.types = []
+        self.label_types = []
         self.offset = 0
 
-    def index(self, row: int, column: int, parent: QModelIndex = ...):
+    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()):
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
         return self.createIndex(row, column, self.node)
 
     def rowCount(self, parent: QModelIndex = QModelIndex()):
-        if 'Attributes' in self.node.keys():
-            return len(self.node_valid_keys) + len(self.node['Attributes'])
-        else:
-            return len(self.node_valid_keys)
+        return len(self.node_valid_keys)
 
     def columnCount(self, parent: QModelIndex = QModelIndex()):
         return 2
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                if section == 0:
-                    return "Property"
-                if section == 1:
-                    return "Value"
+        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+            return "Property" if section == 0 else "Value"
         return super().headerData(section, orientation, role)
 
     def flags(self, index: QModelIndex):
-        f = QAbstractTableModel.flags(self, index)
+        flags = super().flags(index)
         if index.column() == 1:
-            f |= Qt.ItemIsEditable
+            flags |= Qt.ItemIsEditable
             if isinstance(index.data(Qt.UserRole), bool):
-                f |= Qt.ItemIsUserCheckable
-        return f
+                flags |= Qt.ItemIsUserCheckable
+        return flags
+
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
+        if not self.node or not index.isValid():
+            return None
+
+        key = self.node_valid_keys[index.row()]
+        if role in (Qt.DisplayRole, Qt.EditRole):
+            if index.column() == 0:
+                return key  # Property name
+            elif index.column() == 1:
+                if isinstance(self.node, GraphItem):
+                    return self.node.attributes.get(key, '')
+                elif isinstance(self.node, dict):
+                    return self.node.get(key, '')
+
+        elif role == Qt.ToolTipRole and key == 'Image' and index.column() == 1:
+            image_data = self.node.attributes.get('Image', {}).get('image', '') if isinstance(self.node, GraphItem) else self.node.get('Image', {}).get('image', '')
+            image = QImage.fromData(self.__str_to_q_byte_array(image_data)).scaled(300, 300, Qt.KeepAspectRatio)
+            if not image.isNull():
+                data = QByteArray()
+                buffer = QBuffer(data)
+                image.save(buffer, 'PNG')
+                return f"<img src='data:image/png;base64,{bytes(data.toBase64()).decode()}'>"
+
+        elif role == Qt.DecorationRole and key == 'Type' and index.column() == 1:
+            if isinstance(self.node, GraphItem):
+                return js_manager.icons[js_manager.icon_name(self.node.attributes.get('Group', ''), self.node.attributes.get('Type', ''))]
+            elif isinstance(self.node, dict):
+                return js_manager.icons[js_manager.icon_name(self.node.get('Group', ''), self.node.get('Type', ''))]
+
+        elif role == Qt.CheckStateRole and isinstance(self.node.get(key, None), bool):
+            return Qt.Checked if self.node.get(key) else Qt.Unchecked
+
+        elif role == Qt.UserRole:
+            if key == 'Group':
+                return (self.node.attributes.get('Group', ''), self.groups) if isinstance(self.node, GraphItem) else (self.node.get('Group', ''), self.groups)
+            elif key == 'Type':
+                return (self.node.attributes.get('Type', ''), self.types, js_manager.qt_icons(self.node.attributes.get('Group', ''))) if isinstance(self.node, GraphItem) else (self.node.get('Type', ''), self.types, js_manager.qt_icons(self.node.get('Group', '')))
+            elif key == 'Label':
+                return self.node.attributes.get('Label', '') if isinstance(self.node, GraphItem) else self.node.get('Label', '')
+
+        return None
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
         if not self.node:
             return None
+
         if index.isValid():
+            key = self.node_valid_keys[index.row()]
+
+            # Handle display and edit roles for both columns
             if role == Qt.DisplayRole or role == Qt.EditRole:
-                if index.column() == 0:
-                    if index.row() < self.offset:
-                        return self.node_valid_keys[index.row()]
-                    else:
-                        return self.node['Attributes'][index.row() - self.offset]['name']
-                elif index.column() == 1:
-                    if index.row() < self.offset:
-                        if self.node_valid_keys[index.row()] == 'Image':
-                            return self.node['Image']['name']
-                        else:
-                            return self.node[self.node_valid_keys[index.row()]]
-                    else:
-                        return self.node['Attributes'][index.row() - self.offset]['description']
-            elif role == Qt.ToolTipRole:
-                if index.row() < self.offset and index.column() == 1:
-                    if self.node_valid_keys[index.row()] == 'Image':
-                        image = QImage.fromData(self.__str_to_q_byte_array(self.node['Image']['image']))
-                        image = image.scaled(300, 300, Qt.KeepAspectRatio)
-                        if not image.isNull():
-                            data = QByteArray()
-                            buffer = QBuffer(data)
-                            image.save(buffer, 'PNG')
-                            buffer.close()
-                            return "<img src='data:image/png;base64,{}]'>".format(bytes(data.toBase64()).decode())
-            elif role == Qt.DecorationRole:
-                if index.row() < self.offset and index.column() == 1:
-                    if self.node_valid_keys[index.row()] == 'Type':
-                        assert js_manager is not None
-                        return js_manager.icons[js_manager.icon_name(self.node['Group'], self.node['Type'])]
-                    if self.node_valid_keys[index.row()] == 'Image':
-                        pxm = QPixmap()
-                        pxm.loadFromData(self.__str_to_q_byte_array(self.node['Image']['image']))
-                        return QIcon(pxm)
-                return None
+                if index.column() == 0:  # Property name
+                    return key
+                elif index.column() == 1:  # Property value
+                    if isinstance(self.node, dict):
+                        return self.node.get(key, '')
+                    elif isinstance(self.node, GraphItem):
+                        return self.node.attributes.get(key, '')
+
+            # Handle check state role specifically for boolean values
             elif role == Qt.CheckStateRole:
-                if index.row() < self.offset and index.column() == 1:
-                    attr = self.node_valid_keys[index.row()]
-                    if isinstance(self.node[attr], bool):
-                        return self.node[attr]
-                return None
+                if isinstance(self.node, dict):
+                    value = self.node.get(key, None)
+                elif isinstance(self.node, GraphItem):
+                    value = self.node.attributes.get(key, None)
+                if isinstance(value, bool):
+                    return Qt.Checked if value else Qt.Unchecked
+
+            # Tooltip and decoration roles
+            elif role == Qt.ToolTipRole and index.column() == 1 and key == "Image":
+                image_data = self.node.get("Image", {}).get("image", '') if isinstance(self.node,
+                                                                                       dict) else self.node.attributes.get(
+                    "Image", {}).get("image", '')
+                image = QImage.fromData(self.__str_to_q_byte_array(image_data))
+                image = image.scaled(300, 300, Qt.KeepAspectRatio)
+                if not image.isNull():
+                    data = QByteArray()
+                    buffer = QBuffer(data)
+                    image.save(buffer, 'PNG')
+                    buffer.close()
+                    return "<img src='data:image/png;base64,{}'>".format(bytes(data.toBase64()).decode())
+            elif role == Qt.DecorationRole and index.column() == 1 and key == "Image":
+                image_data = self.node.get("Image", {}).get("image", '') if isinstance(self.node,
+                                                                                       dict) else self.node.attributes.get(
+                    "Image", {}).get("image", '')
+                pxm = QPixmap()
+                pxm.loadFromData(self.__str_to_q_byte_array(image_data))
+                return QIcon(pxm)
+
+            # User role for editable controls in delegate
             elif role == Qt.UserRole:
-                if index.row() < self.offset:
-                    attr = self.node_valid_keys[index.row()]
-                    if attr == 'Group':
-                        return self.node['Group'], self.groups
-                    elif attr == 'Type':
-                        assert js_manager is not None
-                        return self.node['Type'], self.types, js_manager.qt_icons(self.node['Group'])
-                    elif attr == 'Label':
-                        return self.node['Label'], self.label_types
-                    else:
-                        return self.node[attr]
+                if key == 'Group':
+                    return (self.node.get('Group', ''), self.groups) if isinstance(self.node, dict) else (
+                    self.node.attributes.get('Group', ''), self.groups)
+                elif key == 'Type':
+                    return (self.node.get('Type', ''), self.types) if isinstance(self.node, dict) else (
+                    self.node.attributes.get('Type', ''), self.types)
+                elif key == 'Label':
+                    return (self.node.get('Label', ''), self.label_types) if isinstance(self.node, dict) else (
+                    self.node.attributes.get('Label', ''), self.label_types)
                 else:
-                    attr: dict = self.node['Attributes'][index.row() - self.offset]
-                    if attr['type'] == 'date':
-                        val = attr['description']
-                        if not val:
-                            return date(1, 1, 1)
-                        return datetime.strptime(val, '%m/%d/%Y').date()
-                    else:
-                        return attr['description']
+                    return self.node.get(key) if isinstance(self.node, dict) else self.node.attributes.get(key)
+
         return None
 
-    def setData(self, index: QModelIndex, value, role: int = Qt.EditRole):
-        if not self.node:
-            return False
-        if index.isValid() and role == Qt.EditRole and index.column() == 1:
-            if index.row() < self.offset:
-                if self.node_valid_keys[index.row()] == 'Group':
-                    assert js_manager is not None
-                    js_manager.update_node_group(self.node, value)
-                elif self.node_valid_keys[index.row()] == 'Type':
-                    assert js_manager is not None
-                    js_manager.update_node_type(node=self.node, node_type=value)
-                else:
-                    self.node[self.node_valid_keys[index.row()]] = value
-                    self.dataChanged.emit(index, index)
-                return True
-            else:
-                self.node['Attributes'][index.row() - self.offset]['description'] = value
-                self.dataChanged.emit(index, index)
-                return True
-        return False
-
-    @signal_throttle()
-    def reset(self, node: {}):
-        if node == self.node:
-            return
+    def reset(self, node):
         self.beginResetModel()
-        self.node = node
-        if not node:
+
+        # Check if 'selected_node' exists and set self.node accordingly
+        self.node = node.get('selected_node') if isinstance(node, dict) and 'selected_node' in node else node
+
+        if isinstance(self.node, GraphItem):
+            self.node_valid_keys = list(self.node.attributes.keys())
+            group = self.node.attributes.get('Group', '')
+            node_type = self.node.attributes.get('Type', '')
+        elif isinstance(self.node, dict):
+            self.node_valid_keys = list(self.node.keys())
+            group = self.node.get('Group', '')
+            node_type = self.node.get('Type', '')
+        else:
+            # Handle case where node is neither GraphItem nor dict
             self.node_valid_keys = []
             self.groups = []
             self.types = []
             self.label_types = []
-        else:
-            self.node_valid_keys = list(self.node.keys())
-            if 'Attributes' in self.node_valid_keys:
-                self.node_valid_keys.remove('Attributes')
-            if 'Position' in self.node_valid_keys:
-                self.node_valid_keys.remove('Position')
-            self.offset = len(self.node_valid_keys)
+            self.endResetModel()
+            return
 
-            assert js_manager is not None
-            group: str = self.node['Group']
+        # Populate groups, types, and label_types based on group and node_type
+        if group:
             self.groups = js_manager.groups()
             self.types = js_manager.types(group)
-            self.label_types = js_manager.attribute_names(group, self.node['Type'])
-        self.endResetModel()
+            self.label_types = js_manager.attribute_names(group, node_type)
+        else:
+            self.groups = []
+            self.types = []
+            self.label_types = []
 
+        self.endResetModel()
 
     @staticmethod
     def __str_to_q_byte_array(val: str) -> QByteArray:
-        q_byte_array = QByteArray(val.encode())
-        q_byte_array = QByteArray.fromBase64(q_byte_array)
-        return q_byte_array
+        return QByteArray.fromBase64(QByteArray(val.encode()))

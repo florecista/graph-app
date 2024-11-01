@@ -1,5 +1,5 @@
 import networkx as nx
-from PyQt5.QtCore import pyqtSignal, QRect, QPoint, QSize, Qt
+from PyQt5.QtCore import pyqtSignal, QRect, QPoint, QSize, Qt, QRectF
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand
 from matplotlib import pyplot as plt
@@ -20,6 +20,8 @@ from widgets.GraphItem import GraphItem
 class GraphView(QGraphicsView):
     rect_changed = pyqtSignal(QRect)
     nodes_selection_changed = pyqtSignal(dict)
+    edges_selection_changed = pyqtSignal(int)
+    deselected = pyqtSignal()
 
     node_foreground_color = QColor(255, 0, 0)
     node_background_color = QColor(0, 0, 0)
@@ -37,21 +39,27 @@ class GraphView(QGraphicsView):
 
     def mousePressEvent(self, event):
         self.origin = event.pos()
-
         is_touching_icon = False
-
         graphEdgePointOffset = 50
 
         for child in self.items():
-            if (isinstance(child, GraphItem)):
-                childRect = QRect(int(child.x()), int(child.y()), int(child.boundingRect().width())+graphEdgePointOffset,
-                                  int(child.boundingRect().height()))
-                positionOffset = QPoint(self.origin.x()-32, self.origin.y())
+            if isinstance(child, GraphItem):
+                childRect = QRect(
+                    int(child.x()), int(child.y()),
+                    int(child.boundingRect().width()) + graphEdgePointOffset,
+                    int(child.boundingRect().height())
+                )
+                positionOffset = QPoint(self.origin.x() - 32, self.origin.y())
                 if childRect.contains(positionOffset):
                     is_touching_icon = True
-                # for line in child.lines:
-                #     line.updateLine(child)
-            self.nodes_selection_changed.emit({})
+                    self.nodes_selection_changed.emit({'selected_node': child})  # Emit only if icon is selected
+                    break  # No need to check further if node is selected
+
+            elif isinstance(child, GraphEdge):
+                edgeRect = QRectF(child.line().p1(), child.line().p2()).normalized()
+                if edgeRect.contains(event.pos()):
+                    self.edges_selection_changed.emit({})  # Emit only if edge is selected
+                    break  # Stop further checks if edge is selected
 
         if not is_touching_icon:
             self.rubberBand.setGeometry(QRect(self.origin, QSize()))
@@ -59,7 +67,7 @@ class GraphView(QGraphicsView):
             self.rubberBand.show()
             self.changeRubberBand = True
 
-        QGraphicsView.mousePressEvent(self, event)
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if self.changeRubberBand:
