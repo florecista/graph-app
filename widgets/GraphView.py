@@ -20,7 +20,7 @@ from widgets.GraphItem import GraphItem
 class GraphView(QGraphicsView):
     rect_changed = pyqtSignal(QRect)
     nodes_selection_changed = pyqtSignal(dict)
-    edges_selection_changed = pyqtSignal(int)
+    edges_selection_changed = pyqtSignal(dict)
     deselected = pyqtSignal()
 
     node_foreground_color = QColor(255, 0, 0)
@@ -58,7 +58,7 @@ class GraphView(QGraphicsView):
             elif isinstance(child, GraphEdge):
                 edgeRect = QRectF(child.line().p1(), child.line().p2()).normalized()
                 if edgeRect.contains(event.pos()):
-                    self.edges_selection_changed.emit({})  # Emit only if edge is selected
+                    self.edges_selection_changed.emit({'selected_edge': child})  # Emit only if edge is selected
                     break  # Stop further checks if edge is selected
 
         if not is_touching_icon:
@@ -89,7 +89,7 @@ class GraphView(QGraphicsView):
                             child.setSelected(True)
                             selected.append(child)
 
-                print(str(len(selected)), 'nodes selected')
+                # print(str(len(selected)), 'nodes selected')
         self.changeRubberBand = False
         QGraphicsView.mouseReleaseEvent(self,event)
 

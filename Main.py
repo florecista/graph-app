@@ -82,11 +82,16 @@ class GraphTab(QMainWindow):
         self.node_property_model.reset(node)
         self.remove_button.setEnabled(len(node) > 0)
 
-    def __edge_selection_changed(self, index):
-        self.tableView.setModel(self.edge_property_model)
-        self.tableView.setItemDelegate(EdgePropertyDelegate(self.tableView))
-        self.edge_property_model.edge_selection_changed(index)
-        self.remove_button.setEnabled(index > -1)
+    def __edge_selection_changed(self, edge):
+        selected_edge = edge.get('selected_edge')
+        if selected_edge:
+            self.tableView.setModel(self.edge_property_model)
+            self.tableView.setItemDelegate(EdgePropertyDelegate(self.tableView))
+            self.edge_property_model.set_edge(selected_edge)  # Pass the edge to the model
+            self.remove_button.setEnabled(True)
+        else:
+            self.tableView.setModel(None)
+            self.remove_button.setEnabled(False)
 
     #
     # def mousePressEvent(self, event):
@@ -297,7 +302,7 @@ class GraphTab(QMainWindow):
         self.ui.graphScene.apply_settings()
 
     def __edge_property_changed(self):
-        self.ui.graphScene.apply_settings()
+        self.ui.graphView.apply_settings(self)
 
     def __remove_selected(self):
         # nodes = list(graphm.cur_G.nodes.data(False))
