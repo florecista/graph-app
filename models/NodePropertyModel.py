@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QByteArray, QBuffer
+from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QByteArray, QBuffer, QDate
 from PyQt5.QtGui import QImage, QPixmap, QIcon
 from managers import js_manager
 from widgets.GraphItem import GraphItem
@@ -23,9 +23,9 @@ class NodePropertyModel(QAbstractTableModel):
     def rowCount(self, parent: QModelIndex = QModelIndex()):
         if not self.node:
             return 0
-        # Get the number of valid keys and the count of 'Attributes' items if they exist
         attributes_count = len(self.node.attributes.get('Attributes', [])) if isinstance(self.node, GraphItem) else 0
-        return len(self.node_valid_keys) + attributes_count
+        total_rows = len(self.node_valid_keys) + attributes_count
+        return total_rows
 
     def columnCount(self, parent: QModelIndex = QModelIndex()):
         return 2
@@ -43,38 +43,42 @@ class NodePropertyModel(QAbstractTableModel):
                 flags |= Qt.ItemIsUserCheckable
         return flags
 
+    from datetime import datetime, date
+
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
         if not self.node or not index.isValid():
             return None
 
-        total_rows = self.rowCount()  # Get the total number of rows
+        total_rows = self.rowCount()
         if index.row() >= total_rows:
             return None
 
-        # Retrieve the key based on the row index
+        # Retrieve key based on row index
         if index.row() < len(self.node_valid_keys):
             key = self.node_valid_keys[index.row()]
         else:
-            # Handle attribute data if the row is beyond the high-level keys
             attr_index = index.row() - len(self.node_valid_keys)
-            if 'Attributes' in self.node.attributes:
-                attribute = self.node.attributes['Attributes'][attr_index]
-                key = attribute.get('name', '')
-            else:
-                return None
+            attribute = self.node.attributes['Attributes'][attr_index]
+            key = attribute.get('name', '')
 
-        # Now use the 'key' to return the appropriate data based on the role
+        # Handle date format for Date of Birth and similar fields
         if role in (Qt.DisplayRole, Qt.EditRole):
             if index.column() == 0:
                 return key  # Property name
             elif index.column() == 1:
-                if isinstance(self.node, GraphItem):
-                    return self.node.attributes.get(key, '') if index.row() < len(
-                        self.node_valid_keys) else attribute.get('description', '')
-                elif isinstance(self.node, dict):
-                    return self.node.get(key, '')
+                if key == 'Date of Birth' and attribute.get('type') == 'date':
+                    date_str = attribute.get('description', '01/01/2000')
+                    # Convert string in 'dd/MM/yyyy' to QDate for display in QDateEdit
+                    try:
+                        date_value = datetime.strptime(date_str, '%d/%m/%Y').date()
+                        return QDate(date_value.year, date_value.month, date_value.day)
+                    except ValueError:
+                        return QDate(2000, 1, 1)  # Default date if conversion fails
 
-        # Handle other roles as needed...
+                # Return other attribute values as usual
+                return self.node.attributes.get(key, '') if index.row() < len(
+                    self.node_valid_keys) else attribute.get('description', '')
+
         return None
 
     def setData(self, index: QModelIndex, value, role: int = Qt.EditRole) -> bool:
@@ -89,7 +93,18 @@ class NodePropertyModel(QAbstractTableModel):
             # Update an item in the Attributes list
             attribute_index = index.row() - len(self.node_valid_keys)
             if 0 <= attribute_index < len(self.node.attributes['Attributes']):
-                self.node.attributes['Attributes'][attribute_index]['description'] = value
+                attribute = self.node.attributes['Attributes'][attribute_index]
+                if attribute.get("type") == "date" and isinstance(value, str):
+                    try:
+                        # Parse and format the date string before saving
+                        date_value = datetime.strptime(value, '%d/%m/%Y').date()
+                        attribute['description'] = date_value.strftime('%d/%m/%Y')
+                    except ValueError:
+                        # Default to a placeholder date if parsing fails
+                        attribute['description'] = '01/01/2000'
+                else:
+                    # For non-date fields, store the value directly
+                    attribute['description'] = value
             else:
                 return False  # Prevent out-of-range errors
 
