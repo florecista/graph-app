@@ -64,6 +64,8 @@ class GraphTab(QMainWindow):
         self.setAcceptDrops(True)
         self.dragStartPosition = QPoint()
 
+        self.icon_size = self.ui.graphScene.graphSceneProperties.application_icon_size
+
         # self._load_state()
         self._read_json()
         self.__init_gui()
@@ -169,7 +171,7 @@ class GraphTab(QMainWindow):
             self.ui.graphScene.add_node(position, attributes)
 
     def _read_json(self):
-        js_manager.init(file_name="type.json")
+        js_manager.init(file_name="type.json", icon_size=self.icon_size)
         self.toolbox = js_manager.tool_box_widget(parent=self.ui.dockWidgetContents_4)
         self.ui.verticalLayout_8.addWidget(self.toolbox)
 

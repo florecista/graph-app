@@ -8,6 +8,7 @@ from PyQt5.QtCore import QObject, Qt, QTemporaryFile, QBuffer
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtWidgets import QToolBox, QWidget, QSizePolicy, QSpacerItem, QGridLayout, QVBoxLayout, QLabel
 
+from constants import ApplicationIconSize
 from widgets.GraphItem import GraphItem
 
 
@@ -22,7 +23,7 @@ class JSONManager(QObject):
         self.icons: dict = {}
         self.pixmaps: dict = {}
 
-    def init(self, file_name) -> None:
+    def init(self, file_name, icon_size=ApplicationIconSize.Small) -> None:
         with open(file_name) as json_file:
             self.data = json.load(json_file)
 
@@ -45,7 +46,7 @@ class JSONManager(QObject):
 
                         self.__create_svg(icon_name, contents)
                         self.__create_icon(icon_name, file.fileName())
-                        self.__create_image(icon_name, file.fileName())
+                        self.__create_image(icon_name, file.fileName(), icon_size)
 
     def __create_svg(self, key, contents) -> None:
         self.svgs[key] = contents
@@ -53,9 +54,9 @@ class JSONManager(QObject):
     def __create_icon(self, key, file_name) -> None:
         self.icons[key] = QIcon(file_name)
 
-    def __create_image(self, key, file_name) -> None:
+    def __create_image(self, key, file_name, icon_size) -> None:
         q_pixmap = QPixmap(file_name)
-        q_pixmap = q_pixmap.scaled(32, 32, Qt.KeepAspectRatio)
+        q_pixmap = q_pixmap.scaled(icon_size, icon_size, Qt.KeepAspectRatio)
         q_image = q_pixmap.toImage().convertToFormat(QImage.Format.Format_RGBA8888)
 
         # Convert QImage to PIL.Image

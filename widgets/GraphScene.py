@@ -3,6 +3,7 @@ import os
 
 from PyQt5 import QtGui
 
+import constants
 from managers import js_manager
 from PIL import Image
 from PyQt5.QtCore import Qt, QBuffer, QByteArray, QPoint, QPointF
@@ -12,11 +13,15 @@ from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem
 from widgets.GraphEdge import GraphEdge
 from widgets.GraphItem import GraphItem
 
+from .GraphSceneProperties import GraphSceneProperties
+
 
 class GraphScene(QGraphicsScene):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.graphSceneProperties = GraphSceneProperties()
+        self.graphSceneProperties.application_icon_size = constants.ApplicationIconSize.Small
 
         # self.initUI()
 
@@ -41,7 +46,7 @@ class GraphScene(QGraphicsScene):
         # build pixmap
         icon_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + r"\images\\" + image
         pixmap = QPixmap(icon_path)
-        pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
+        pixmap = pixmap.scaled(self.graphSceneProperties.application_icon_size, self.graphSceneProperties.application_icon_size, Qt.KeepAspectRatio)
 
         # build graph item
         graphItem = GraphItem(pixmap)

@@ -43,3 +43,7 @@ class NodeShapes(str, Enum):
     Triangle = "^"
     Diamond = "d"
 
+class ApplicationIconSize(IntEnum):
+    Big = 64
+    Medium = 48
+    Small = 32
