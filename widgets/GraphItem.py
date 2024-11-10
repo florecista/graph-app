@@ -60,6 +60,12 @@ class GraphItem(QGraphicsPixmapItem):
     #         pixmap = pixmap.scaled(32, 32, Qt.KeepAspectRatio)
     #     self.setPixmap(pixmap)
 
+    def set_label(self, label):
+        """Public method to set the label."""
+        self._set_label(label)
+        # If necessary, you can trigger any update or repaint here
+        self.update()  # For example, to refresh the view after changing the label
+
     def hoverEnterEvent(self, event):
         self._is_hovered = True
         self.update()
